@@ -1,0 +1,24 @@
+{
+  "name": "bs-webmachine-experiment",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "bsb -make-world",
+    "start": "bsb -make-world -w",
+    "clean": "bsb -clean-world"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ncthbrt/bs-webmachine-experiment.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ncthbrt/bs-webmachine-experiment/issues"
+  },
+  "homepage": "https://github.com/ncthbrt/bs-webmachine-experiment#readme",
+  "devDependencies": {
+    "bs-platform": "bsansouci/bsb-native#2.1.1"
+  }
+}

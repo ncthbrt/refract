@@ -1,0 +1,19 @@
+{
+  "name": "NameOfLibrary",
+  "sources": "src",
+  "entries": [
+    {
+      "backend": "bytecode",
+      "main-module": "WebMachine"
+    },
+    {
+      "backend": "native",
+      "main-module": "WebMachine"
+    },
+    {
+      "backend": "js",
+      "main-module": "WebMachine"
+    }
+  ],
+  "refmt": 3
+}

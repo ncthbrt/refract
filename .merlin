@@ -1,0 +1,8 @@
+####{BSB GENERATED: NO EDIT
+FLG -ppx /Users/ncthbrt/git/bs-webmachine-experiment/node_modules/bs-platform/lib/bsppx.exe
+FLG -no-alias-deps -color always
+FLG -w -30-40+6+7+27+32..39+44+45+101
+B /Users/ncthbrt/git/bs-webmachine-experiment/node_modules/bs-platform/lib
+S src
+B lib/bs/bytecode/src
+####BSB GENERATED: NO EDIT}
