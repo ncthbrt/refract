@@ -29,7 +29,7 @@
     "@esy-ocaml/reason": "^3.0.0",
     "@opam/jbuilder": "^1.0.0-beta14",
     "refmterr": "^3.0.4",
-    "repromise": "^4.0.0"
+    "repromise": "github:aantron/repromise#fda26720b5e961cd643a73b27c3d99c6b7f7a3a2"
   },
   "peerDependencies": {
     "ocaml": "~4.6.0"
