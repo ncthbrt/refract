@@ -19,7 +19,7 @@ module Request = {
       /* Has req body and no res body */
       | Patch;
     let fromString = str =>
-      switch (String.uppercase_ascii(str)) {
+      switch (String.uppercase(str)) {
       | "GET" => Some(Get)
       | "HEAD" => Some(Head)
       | "POST" => Some(Post)
@@ -315,7 +315,7 @@ module Route = {
 };
 
 module Part = {
-  type t('a) = ('a, 'a => unit) => unit;
+  type t('a) = 'a => Repromise.t(option('a));
   let apply = a => ();
   let bind = a => ();
 };
