@@ -1,4 +1,0 @@
-# jbuilder build
-# OCAMLPARAM: unset
-$ /Users/ncthbrt/.esy/3_________________________________________________________________/i/ocaml-4.6.1-2f0a0fce/bin/ocamlc.opt -config > /tmp/jbuild017e79.output
-$ /Users/ncthbrt/.esy/3_________________________________________________________________/i/opam__slash__ocamlfind-1.7.3--1-cc28f505/bin/ocamlfind printconf path > /tmp/jbuilde171b9.output
