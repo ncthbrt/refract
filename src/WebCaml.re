@@ -1,5 +1,4 @@
 module Request = {
-  type t;
   module Method = {
     type t =
       /* Has no request body */
@@ -44,7 +43,20 @@ module Request = {
       | Trace => "TRACE"
       | Patch => "PATCH";
   };
-  let headers: t => array((string, string)) = (_) => [||];
+  module Body = {
+    type t;
+  };
+  type t = {
+    path: string,
+    headers: list((string, option(string))),
+    method: Method.t,
+    body: Body.t,
+  };
+  let headers = ({headers}) => headers;
+  let header = ({headers}, header) =>
+    try (snd(List.find(((k, _)) => k == header, headers))) {
+    | Not_found => None
+    };
 };
 
 module Response = {
@@ -230,9 +242,80 @@ module Response = {
       | NotExtended => 510
       | NetworkAuthenticationRequired => 511;
   };
-  type pending;
-  type complete;
-  type cmds =
-    | Status(StatusCode.t);
-  type t('a);
+  type complete = {
+    status: StatusCode.t,
+    headers: array((string, string)),
+  };
+  type partial = {headers: array((string, string))};
+  type t(_) =
+    | Complete(complete): t(complete)
+    | Partial(partial): t(partial);
+};
+
+module Route = {
+  exception RouteDoesNotMatch;
+  exception MalformedPathString;
+  type t =
+    | Constant(string, t)
+    | String(t)
+    | Int(t)
+    | UInt(t)
+    | Float(t)
+    | Wildcard(t)
+    | End;
+  type evaluatedRoute =
+    | String(string, evaluatedRoute)
+    | Int(int, evaluatedRoute)
+    | Float(float, evaluatedRoute)
+    | End;
+  let parse = route => {
+    let rec aux: list(string) => t =
+      fun
+      | [] => End
+      | ["%d", ...tail] => Int(aux(tail))
+      | ["%i", ...tail] => Int(aux(tail))
+      | ["%u", ...tail] => UInt(aux(tail))
+      | ["*", ...tail] => Wildcard(aux(tail))
+      | ["%f", ...tail] => Float(aux(tail))
+      | ["%s", ...tail] => String(aux(tail))
+      | [constant, ...tail] when true => Constant(constant, aux(tail))
+      | [constant, ...tail] => Constant(constant, aux(tail));
+    aux(Str.split(route, "/"));
+  };
+  let evaluate = ({path}: Request.t, route) => {
+    let rec aux = (path, route: t) =>
+      switch (path, route) {
+      | ([], End) => End
+      | ([_, ..._], End) => raise(RouteDoesNotMatch)
+      | ([], _) => raise(RouteDoesNotMatch)
+      | ([hd, ...tl], Constant(str, next)) when str == hd => aux(tl, next)
+      | (_, Constant(_, _)) => raise(RouteDoesNotMatch)
+      | ([hd, ...tl], String(next)) => String(hd, aux(tl, next))
+      | ([hd, ...tl], Int(next)) =>
+        try (Int(int_of_string(hd), aux(tl, next))) {
+        | Failure("int_of_string") => raise(RouteDoesNotMatch)
+        }
+      | ([hd, ...tl], UInt(next)) =>
+        let value =
+          try (int_of_string(hd)) {
+          | Failure("int_of_string") => raise(RouteDoesNotMatch)
+          };
+        value >= 0 ? Int(value, aux(tl, next)) : raise(RouteDoesNotMatch);
+      | ([hd, ...tl], Float(next)) =>
+        try (Float(float_of_string(hd), aux(tl, next))) {
+        | Failure("int_of_string") => raise(RouteDoesNotMatch)
+        }
+      | ([_, ...tl], Wildcard(next)) =>
+        try (aux(tl, next)) {
+        | RouteDoesNotMatch => aux(tl, Wildcard(next))
+        }
+      };
+    aux(Str.split(Str.regexp("/"), path), route);
+  };
+};
+
+module Part = {
+  type t('a) = 'a => Repromise.t(option('a));
+  let apply = a => ();
+  let bind = a => ();
 };

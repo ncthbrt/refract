@@ -18,6 +18,9 @@
     "url": "https://github.com/ncthbrt/bs-webmachine-experiment/issues"
   },
   "homepage": "https://github.com/ncthbrt/bs-webmachine-experiment#readme",
+  "dependencies": {
+    "repromise": "github:aantron/repromise"
+  },
   "devDependencies": {
     "bs-platform": "bsansouci/bsb-native#2.1.1"
   }

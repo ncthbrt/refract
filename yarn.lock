@@ -2,6 +2,10 @@
 # yarn lockfile v1
 
 
+bs-platform@^2.1.0:
+  version "2.2.3"
+  resolved "https://registry.yarnpkg.com/bs-platform/-/bs-platform-2.2.3.tgz#d905ae10a5f3621e6a739041dfa0b58483a2174f"
+
 bs-platform@bsansouci/bsb-native#2.1.1:
   version "2.1.1"
   resolved "https://codeload.github.com/bsansouci/bsb-native/tar.gz/d76155b709dba032cdb11e99ebe0e2c37bcb2c85"
@@ -21,6 +25,12 @@ fd-slicer@~1.0.1:
 pend@~1.2.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/pend/-/pend-1.2.0.tgz#7a57eb550a6783f9115331fcf4663d5c8e007a50"
+
+"repromise@github:aantron/repromise":
+  version "0.1.0"
+  resolved "https://codeload.github.com/aantron/repromise/tar.gz/abb4cdfd6799e75f4b53dd15f79381734af63107"
+  dependencies:
+    bs-platform "^2.1.0"
 
 yauzl@^2.9.1:
   version "2.9.1"

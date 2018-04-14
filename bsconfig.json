@@ -1,18 +1,21 @@
 {
   "name": "NameOfLibrary",
   "sources": "src",
+  "dependencies": [
+    "repromise"
+  ],
   "entries": [
     {
       "backend": "bytecode",
-      "main-module": "WebMachine"
+      "main-module": "WebCaml"
     },
     {
       "backend": "native",
-      "main-module": "WebMachine"
+      "main-module": "WebCaml"
     },
     {
       "backend": "js",
-      "main-module": "WebMachine"
+      "main-module": "WebCaml"
     }
   ],
   "refmt": 3
