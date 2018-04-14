@@ -1,27 +1,42 @@
 {
-  "name": "bs-webmachine-experiment",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "name": "reconstruct",
+  "version": "0.1.0",
+  "description": "Reason workflow with Esy",
+  "license": "MIT",
+  "esy": {
+    "build": [
+      [
+        "refmterr",
+        "jbuilder",
+        "build"
+      ]
+    ],
+    "install": [
+      "esy-installer"
+    ],
+    "buildsInSource": "_build"
+  },
   "scripts": {
-    "build": "bsb -make-world",
-    "start": "bsb -make-world -w",
-    "clean": "bsb -clean-world"
+    "bsb-build": "bsb -make-world",
+    "bsb-watch": "bsb -w -make-world",
+    "clean": "bsb -clean-world && rm -rf _build/ lib/"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ncthbrt/bs-webmachine-experiment.git"
+  "resolutions": {
+    "**/@opam/lwt": "3.3.0"
   },
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/ncthbrt/bs-webmachine-experiment/issues"
-  },
-  "homepage": "https://github.com/ncthbrt/bs-webmachine-experiment#readme",
   "dependencies": {
-    "repromise": "github:aantron/repromise"
+    "@esy-ocaml/esy-installer": "^0.0.0",
+    "@esy-ocaml/reason": "^3.0.0",
+    "@opam/jbuilder": "^1.0.0-beta14",
+    "refmterr": "^3.0.4",
+    "repromise": "^4.0.0"
+  },
+  "peerDependencies": {
+    "ocaml": "~4.6.0"
   },
   "devDependencies": {
+    "@esy-ocaml/merlin": "*",
+    "ocaml": "~4.6.0",
     "bs-platform": "bsansouci/bsb-native#2.1.1"
   }
 }

@@ -1,0 +1,13 @@
+# jbuilder build
+# OCAMLPARAM: unset
+$ /Users/ncthbrt/.esy/3_________________________________________________________________/i/opam__slash__ocamlfind-1.7.3--1-cc28f505/bin/ocamlfind printconf path > /tmp/jbuildd3fa36.output
+$ /Users/ncthbrt/.esy/3_________________________________________________________________/i/ocaml-4.6.1-2f0a0fce/bin/ocamlc.opt -config > /tmp/jbuildc49086.output
+$ (cd _build/default && /Users/ncthbrt/.esy/3_________________________________________________________________/i/ocaml-4.6.1-2f0a0fce/bin/ocamlc.opt -w -40 -w -49 -g -bin-annot -I src/.lib.objs -no-alias-deps -o src/.lib.objs/lib.cmo -c -impl src/lib.ml-gen)
+$ (cd _build/default && /Users/ncthbrt/.esy/3_________________________________________________________________/i/esy_ocaml__slash__reason-3.1.0-534ac937/bin/refmt --print binary src/Reconstruct.re) > _build/default/src/Reconstruct.re.ml
+$ (cd _build/default && /Users/ncthbrt/.esy/3_________________________________________________________________/i/ocaml-4.6.1-2f0a0fce/bin/ocamldep.opt -modules -impl src/Reconstruct.re.ml) > _build/default/src/Reconstruct.re.ml.d
+$ (cd _build/default && /Users/ncthbrt/.esy/3_________________________________________________________________/i/ocaml-4.6.1-2f0a0fce/bin/ocamlc.opt -w -40 -w +26 -g -bin-annot -I src/.lib.objs -no-alias-deps -open Lib -o src/.lib.objs/lib__Reconstruct.cmo -c -impl src/Reconstruct.re.ml)
+$ (cd _build/default && /Users/ncthbrt/.esy/3_________________________________________________________________/i/ocaml-4.6.1-2f0a0fce/bin/ocamlc.opt -w -40 -w +26 -g -a -o src/lib.cma src/.lib.objs/lib.cmo src/.lib.objs/lib__Reconstruct.cmo)
+$ (cd _build/default && /Users/ncthbrt/.esy/3_________________________________________________________________/i/ocaml-4.6.1-2f0a0fce/bin/ocamlopt.opt -w -40 -w -49 -g -I src/.lib.objs -intf-suffix .ml-gen -no-alias-deps -o src/.lib.objs/lib.cmx -c -impl src/lib.ml-gen)
+$ (cd _build/default && /Users/ncthbrt/.esy/3_________________________________________________________________/i/ocaml-4.6.1-2f0a0fce/bin/ocamlopt.opt -w -40 -w +26 -g -I src/.lib.objs -intf-suffix .ml -no-alias-deps -open Lib -o src/.lib.objs/lib__Reconstruct.cmx -c -impl src/Reconstruct.re.ml)
+$ (cd _build/default && /Users/ncthbrt/.esy/3_________________________________________________________________/i/ocaml-4.6.1-2f0a0fce/bin/ocamlopt.opt -w -40 -w +26 -g -a -o src/lib.cmxa src/.lib.objs/lib.cmx src/.lib.objs/lib__Reconstruct.cmx)
+$ (cd _build/default && /Users/ncthbrt/.esy/3_________________________________________________________________/i/ocaml-4.6.1-2f0a0fce/bin/ocamlopt.opt -w -40 -w +26 -g -shared -linkall -I src -o src/lib.cmxs src/lib.cmxa)

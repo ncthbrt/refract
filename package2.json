@@ -1,0 +1,27 @@
+{
+  "name": "reconstruct",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "bsb -make-world",
+    "watch": "bsb -w -make-world",
+    "clean": "bsb -clean-world && rm -rf _build/ lib/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ncthbrt/bs-webmachine-experiment.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ncthbrt/bs-webmachine-experiment/issues"
+  },
+  "homepage": "https://github.com/ncthbrt/bs-webmachine-experiment#readme",
+  "dependencies": {
+    "repromise": "github:aantron/repromise"
+  },
+  "devDependencies": {
+    "bs-platform": "^2.2.3"
+  }
+}

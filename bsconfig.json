@@ -7,15 +7,15 @@
   "entries": [
     {
       "backend": "bytecode",
-      "main-module": "WebCaml"
+      "main-module": "Reconstruct"
     },
     {
       "backend": "native",
-      "main-module": "WebCaml"
+      "main-module": "Reconstruct"
     },
     {
       "backend": "js",
-      "main-module": "WebCaml"
+      "main-module": "Reconstruct"
     }
   ],
   "refmt": 3

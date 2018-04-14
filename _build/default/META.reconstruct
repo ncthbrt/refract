@@ -1,0 +1,6 @@
+description = ""
+requires = ""
+archive(byte) = "lib.cma"
+archive(native) = "lib.cmxa"
+plugin(byte) = "lib.cma"
+plugin(native) = "lib.cmxs"

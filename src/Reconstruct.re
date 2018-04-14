@@ -293,17 +293,17 @@ module Route = {
       | ([hd, ...tl], String(next)) => String(hd, aux(tl, next))
       | ([hd, ...tl], Int(next)) =>
         try (Int(int_of_string(hd), aux(tl, next))) {
-        | Failure("int_of_string") => raise(RouteDoesNotMatch)
+        | Failure(_) => raise(RouteDoesNotMatch)
         }
       | ([hd, ...tl], UInt(next)) =>
         let value =
           try (int_of_string(hd)) {
-          | Failure("int_of_string") => raise(RouteDoesNotMatch)
+          | Failure(_) => raise(RouteDoesNotMatch)
           };
         value >= 0 ? Int(value, aux(tl, next)) : raise(RouteDoesNotMatch);
       | ([hd, ...tl], Float(next)) =>
         try (Float(float_of_string(hd), aux(tl, next))) {
-        | Failure("int_of_string") => raise(RouteDoesNotMatch)
+        | Failure(_) => raise(RouteDoesNotMatch)
         }
       | ([_, ...tl], Wildcard(next)) =>
         try (aux(tl, next)) {

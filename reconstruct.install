@@ -1,0 +1,20 @@
+lib: [
+  "_build/install/default/lib/reconstruct/META" {"META"}
+  "_build/install/default/lib/reconstruct/opam" {"opam"}
+  "_build/install/default/lib/reconstruct/lib.cmi" {"lib.cmi"}
+  "_build/install/default/lib/reconstruct/lib.cmx" {"lib.cmx"}
+  "_build/install/default/lib/reconstruct/lib.cmt" {"lib.cmt"}
+  "_build/install/default/lib/reconstruct/lib.ml-gen" {"lib.ml-gen"}
+  "_build/install/default/lib/reconstruct/lib__Reconstruct.cmi" {"lib__Reconstruct.cmi"}
+  "_build/install/default/lib/reconstruct/lib__Reconstruct.cmx" {"lib__Reconstruct.cmx"}
+  "_build/install/default/lib/reconstruct/lib__Reconstruct.cmt" {"lib__Reconstruct.cmt"}
+  "_build/install/default/lib/reconstruct/Reconstruct.re" {"Reconstruct.re"}
+  "_build/install/default/lib/reconstruct/lib.cma" {"lib.cma"}
+  "_build/install/default/lib/reconstruct/lib.cmxa" {"lib.cmxa"}
+  "_build/install/default/lib/reconstruct/lib.a" {"lib.a"}
+  "_build/install/default/lib/reconstruct/lib.cmxs" {"lib.cmxs"}
+  "_build/install/default/lib/reconstruct/reconstruct.dune" {"reconstruct.dune"}
+]
+doc: [
+  "_build/install/default/doc/reconstruct/LICENSE"
+]
