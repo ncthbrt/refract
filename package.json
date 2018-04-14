@@ -29,14 +29,13 @@
     "@esy-ocaml/reason": "^3.0.0",
     "@opam/jbuilder": "^1.0.0-beta14",
     "refmterr": "^3.0.4",
-    "repromise": "github:aantron/repromise"
+    "repromise": "github:aantron/repromise#4fcf217d4c37ef87b22656204ac8994418247dc3"
   },
   "peerDependencies": {
     "ocaml": "~4.6.0"
   },
   "devDependencies": {
     "@esy-ocaml/merlin": "*",
-    "ocaml": "~4.6.0",
-    "bs-platform": "bsansouci/bsb-native#2.1.1"
+    "ocaml": "~4.6.0"
   }
 }
