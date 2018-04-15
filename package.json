@@ -17,9 +17,7 @@
     "buildsInSource": "_build"
   },
   "scripts": {
-    "bsb-build": "bsb -make-world",
-    "bsb-watch": "bsb -w -make-world",
-    "clean": "bsb -clean-world && rm -rf _build/ lib/"
+    "clean": "rm -rf _build/ lib/"
   },
   "resolutions": {
     "**/@opam/lwt": "3.3.0"
@@ -36,6 +34,7 @@
   },
   "devDependencies": {
     "@esy-ocaml/merlin": "*",
+    "bs-platform": "^3.0.0",
     "ocaml": "~4.6.0"
   }
 }

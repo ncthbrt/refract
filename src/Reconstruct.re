@@ -250,6 +250,20 @@ module Response = {
   type t(_) =
     | Complete(complete): t(complete)
     | Partial(partial): t(partial);
+  let header: type a. (t(a), string, string) => t(a) =
+    (res, str, str) =>
+      switch (res) {
+      | Complete(res) => Complete({...res, headers: res.headers})
+      | Partial(res) => Partial({headers: res.headers})
+      };
+  let complete = (res: partial, ~status=StatusCode.Ok, ()) =>
+    Complete({headers: res.headers, status});
+  let setStatus: type a. (t(a), StatusCode.t) => t(complete) =
+    (res, status: StatusCode.t) =>
+      switch (res) {
+      | Complete(res) => Complete({...res, status})
+      | Partial(res) => complete(res, ~status, ())
+      };
 };
 
 module Route = {
@@ -314,8 +328,70 @@ module Route = {
   };
 };
 
-module Part = {
-  type t('a) = 'a => Repromise.t(option('a));
-  let apply = a => ();
-  let bind = a => ();
+module HttpContext = {
+  type t('a) = {
+    request: Request.t,
+    response: Response.t('a),
+  };
+};
+
+module Machine = {
+  type result('a) = [ | `Handled(HttpContext.t('a)) | `Unhandled];
+  type t('a) = HttpContext.t('a) => Repromise.t(result('a));
+  let handled = ctx => `Handled(ctx);
+  let unhandled = ctx => `Unhandled;
+  let flatMap = (res: Repromise.t(result('a)), f) =>
+    Repromise.then_(
+      fun
+      | `Handled(ctx) => f(ctx)
+      | `Unhandled => Repromise.resolve(`Unhandled),
+      res,
+    );
+  let bind = flatMap;
+  let map = (res: Repromise.t(result('a)), f) =>
+    Repromise.then_(
+      fun
+      | `Handled(ctx) => Repromise.resolve(`Handled(f(ctx)))
+      | `Unhandled => Repromise.resolve(`Unhandled),
+      res,
+    );
+  let mapUnhandled = (res: Repromise.t(result('a)), f) =>
+    Repromise.then_(
+      fun
+      | `Unhandled => f()
+      | `Handled(r) => Repromise.resolve(`Handled(r)),
+      res,
+    );
+  let compose = (a, b, ctx) => flatMap(a(ctx), b);
+  type complete = t(Response.complete);
+};
+
+module Combinators = {
+  module Response = {
+    let ok: Machine.complete =
+      (ctx: HttpContext.t(_)) =>
+        Repromise.resolve(
+          `Handled({...ctx, response: Response.setStatus(ctx.response, Ok)}),
+        );
+    let created: Machine.complete =
+      (ctx: HttpContext.t(_)) =>
+        Repromise.resolve(
+          `Handled({
+            ...ctx,
+            response: Response.setStatus(ctx.response, Created),
+          }),
+        );
+  };
+  let first: list(_) => Machine.complete =
+    (lst, ctx) => {
+      let rec aux =
+        fun
+        | [] => Repromise.resolve(`Unhandled)
+        | [hd, ...tail] => Machine.mapUnhandled(hd(ctx), () => aux(tail));
+      aux(lst);
+    };
+  module Operators = {
+    let (>=) = Machine.flatMap;
+    let (>=>) = Machine.compose;
+  };
 };

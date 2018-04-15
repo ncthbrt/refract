@@ -437,6 +437,10 @@
   peerDependencies:
     ocaml " >= 4.2.3000"
 
+bs-platform@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/bs-platform/-/bs-platform-3.0.0.tgz#38f200730db52fdea37819376b6ac3dfb20244c0"
+
 ocaml@~4.6.0:
   version "4.6.1"
   resolved "https://registry.yarnpkg.com/ocaml/-/ocaml-4.6.1.tgz#8babea2c41a9f734313b4fc1841ec0963c9d7a07"
@@ -451,9 +455,9 @@ refmterr@^3.0.4:
   peerDependencies:
     ocaml " >= 4.2.0  < 4.7.0"
 
-"repromise@github:aantron/repromise#4fcf217d4c37ef87b22656204ac8994418247dc3":
+"repromise@github:aantron/repromise":
   version "0.1.0"
-  resolved "https://codeload.github.com/aantron/repromise/tar.gz/4fcf217d4c37ef87b22656204ac8994418247dc3"
+  resolved "https://codeload.github.com/aantron/repromise/tar.gz/339ba2caf0c5b1cc3e4e6f99a1bc49d47a05291b"
   dependencies:
     "@esy-ocaml/esy-installer" "^0.0.0"
     "@opam/ctypes" "^0.13.0"

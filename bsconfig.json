@@ -1,22 +1,8 @@
 {
-  "name": "NameOfLibrary",
+  "name": "Reconstruct",
   "sources": "src",
-  "dependencies": [
+  "ocamlfind-dependencies": [
     "repromise"
-  ],
-  "entries": [
-    {
-      "backend": "bytecode",
-      "main-module": "Reconstruct"
-    },
-    {
-      "backend": "native",
-      "main-module": "Reconstruct"
-    },
-    {
-      "backend": "js",
-      "main-module": "Reconstruct"
-    }
   ],
   "refmt": 3
 }
