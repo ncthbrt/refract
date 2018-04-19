@@ -13,6 +13,10 @@ lib: [
   "_build/install/default/lib/reconstruct/lib__Reconstruct_Combinators.cmx" {"lib__Reconstruct_Combinators.cmx"}
   "_build/install/default/lib/reconstruct/lib__Reconstruct_Combinators.cmt" {"lib__Reconstruct_Combinators.cmt"}
   "_build/install/default/lib/reconstruct/Reconstruct_Combinators.re" {"Reconstruct_Combinators.re"}
+  "_build/install/default/lib/reconstruct/lib__Test.cmi" {"lib__Test.cmi"}
+  "_build/install/default/lib/reconstruct/lib__Test.cmx" {"lib__Test.cmx"}
+  "_build/install/default/lib/reconstruct/lib__Test.cmt" {"lib__Test.cmt"}
+  "_build/install/default/lib/reconstruct/Test.re" {"Test.re"}
   "_build/install/default/lib/reconstruct/lib.cma" {"lib.cma"}
   "_build/install/default/lib/reconstruct/lib.cmxa" {"lib.cmxa"}
   "_build/install/default/lib/reconstruct/lib.a" {"lib.a"}

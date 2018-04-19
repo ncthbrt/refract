@@ -1,3 +1,13 @@
+module CrossplatString = {
+  let uppercase_ascii_char = c =>
+    if (c >= 'a' && c <= 'z') {
+      Char.unsafe_chr(Char.code(c) - 32);
+    } else {
+      c;
+    };
+  let uppercase_ascii = String.map(uppercase_ascii_char);
+};
+
 module Request = {
   module Method = {
     type t =
@@ -19,7 +29,7 @@ module Request = {
       /* Has req body and no res body */
       | Patch;
     let fromString = str =>
-      switch (String.uppercase(str)) {
+      switch (CrossplatString.uppercase_ascii(str)) {
       | "GET" => Some(Get)
       | "HEAD" => Some(Head)
       | "POST" => Some(Post)
@@ -242,86 +252,80 @@ module Response = {
       | NotExtended => 510
       | NetworkAuthenticationRequired => 511;
   };
-  type complete = {
+  type t = {
     status: StatusCode.t,
     headers: array((string, string)),
   };
-  type partial = {headers: array((string, string))};
-  type t(_) =
-    | Complete(complete): t(complete)
-    | Partial(partial): t(partial);
-  let header: type a. (t(a), string, string) => t(a) =
-    (res, str, str) =>
-      switch (res) {
-      | Complete(res) => Complete({...res, headers: res.headers})
-      | Partial(res) => Partial({headers: res.headers})
-      };
-  let complete = (res: partial, ~status=StatusCode.Ok, ()) =>
-    Complete({headers: res.headers, status});
-  let setStatus: type a. (t(a), StatusCode.t) => t(complete) =
-    (res, status: StatusCode.t) =>
-      switch (res) {
-      | Complete(res) => Complete({...res, status})
-      | Partial(res) => complete(res, ~status, ())
-      };
 };
 
 module Route = {
   exception RouteDoesNotMatch;
   exception MalformedPathString;
-  type t =
-    | Constant(string, t)
-    | String(t)
-    | Int(t)
-    | UInt(t)
-    | Float(t)
-    | Wildcard(t)
-    | End;
-  type evaluatedRoute =
-    | String(string, evaluatedRoute)
-    | Int(int, evaluatedRoute)
-    | Float(float, evaluatedRoute)
-    | End;
+  type part =
+    | Constant(string)
+    | String
+    | Int
+    | UInt
+    | Float
+    | Wildcard;
+  type t('a) = list(part);
+  type evalPart =
+    | String(string)
+    | Int(int)
+    | Float(float);
+  type evaluatedRoute = list(evalPart);
   let parse = route => {
-    let rec aux: list(string) => t =
+    let rec aux: list(string) => t('a) =
       fun
-      | [] => End
-      | ["%d", ...tail] => Int(aux(tail))
-      | ["%i", ...tail] => Int(aux(tail))
-      | ["%u", ...tail] => UInt(aux(tail))
-      | ["*", ...tail] => Wildcard(aux(tail))
-      | ["%f", ...tail] => Float(aux(tail))
-      | ["%s", ...tail] => String(aux(tail))
-      | [constant, ...tail] when true => Constant(constant, aux(tail))
-      | [constant, ...tail] => Constant(constant, aux(tail));
+      | [] => []
+      | ["%d", ...tail] => [Int, ...aux(tail)]
+      | ["%i", ...tail] => [Int, ...aux(tail)]
+      | ["%u", ...tail] => [UInt, ...aux(tail)]
+      | ["*", ...tail] => [Wildcard, ...aux(tail)]
+      | ["%f", ...tail] => [Float, ...aux(tail)]
+      | ["%s", ...tail] => [String, ...aux(tail)]
+      | [constant, ...tail] => [Constant(constant), ...aux(tail)];
     aux(Str.split(route, "/"));
   };
+  let filterNonValues = route =>
+    List.filter(
+      fun
+      | Constant(_) => false
+      | Wildcard => false
+      | _ => true,
+      route,
+    );
   let evaluate = ({path}: Request.t, route) => {
-    let rec aux = (path, route: t) =>
+    let rec aux = (path, route: t('a)) =>
       switch (path, route) {
-      | ([], End) => End
-      | ([_, ..._], End) => raise(RouteDoesNotMatch)
+      | ([], []) => []
+      | ([_, ..._], []) => raise(RouteDoesNotMatch)
       | ([], _) => raise(RouteDoesNotMatch)
-      | ([hd, ...tl], Constant(str, next)) when str == hd => aux(tl, next)
-      | (_, Constant(_, _)) => raise(RouteDoesNotMatch)
-      | ([hd, ...tl], String(next)) => String(hd, aux(tl, next))
-      | ([hd, ...tl], Int(next)) =>
-        try (Int(int_of_string(hd), aux(tl, next))) {
+      | ([hd, ...tl], [Constant(str), ...next]) when str == hd =>
+        aux(tl, next)
+      | (_, [Constant(_), ..._]) => raise(RouteDoesNotMatch)
+      | ([hd, ...tl], [String, ...next]) => [
+          String(hd),
+          ...aux(tl, next),
+        ]
+      | ([hd, ...tl], [Int, ...next]) =>
+        try ([Int(int_of_string(hd)), ...aux(tl, next)]) {
         | Failure(_) => raise(RouteDoesNotMatch)
         }
-      | ([hd, ...tl], UInt(next)) =>
+      | ([hd, ...tl], [UInt, ...next]) =>
         let value =
           try (int_of_string(hd)) {
           | Failure(_) => raise(RouteDoesNotMatch)
           };
-        value >= 0 ? Int(value, aux(tl, next)) : raise(RouteDoesNotMatch);
-      | ([hd, ...tl], Float(next)) =>
-        try (Float(float_of_string(hd), aux(tl, next))) {
+        value >= 0 ?
+          [Int(value), ...aux(tl, next)] : raise(RouteDoesNotMatch);
+      | ([hd, ...tl], [Float, ...next]) =>
+        try ([Float(float_of_string(hd)), ...aux(tl, next)]) {
         | Failure(_) => raise(RouteDoesNotMatch)
         }
-      | ([_, ...tl], Wildcard(next)) =>
+      | ([_, ...tl], [Wildcard, ...next]) =>
         try (aux(tl, next)) {
-        | RouteDoesNotMatch => aux(tl, Wildcard(next))
+        | RouteDoesNotMatch => aux(tl, [Wildcard, ...next])
         }
       };
     aux(Str.split(Str.regexp("/"), path), route);
@@ -329,69 +333,71 @@ module Route = {
 };
 
 module HttpContext = {
-  type t('a) = {
+  type t = {
     request: Request.t,
-    response: Response.t('a),
+    response: Response.t,
   };
 };
 
 module Machine = {
-  type result('a) = [ | `Handled(HttpContext.t('a)) | `Unhandled];
-  type t('a) = HttpContext.t('a) => Repromise.t(result('a));
-  let handled = ctx => `Handled(ctx);
-  let unhandled = ctx => `Unhandled;
-  let flatMap = (res: Repromise.t(result('a)), f) =>
+  type result =
+    | Unhandled
+    | Handled(HttpContext.t);
+  type t = HttpContext.t => Repromise.t(result);
+  let handled: t = ctx => Repromise.resolve(Handled(ctx));
+  let unhandled: t = ctx => Repromise.resolve(Unhandled);
+  let flatMap = (res, f: 'a => Repromise.t('b)) =>
     Repromise.then_(
       fun
-      | `Handled(ctx) => f(ctx)
-      | `Unhandled => Repromise.resolve(`Unhandled),
+      | Handled(ctx) => f(ctx)
+      | Unhandled => Repromise.resolve(Unhandled),
       res,
     );
   let bind = flatMap;
-  let map = (res: Repromise.t(result('a)), f) =>
+  let map = (res: Repromise.t(result), f) =>
     Repromise.then_(
       fun
-      | `Handled(ctx) => Repromise.resolve(`Handled(f(ctx)))
-      | `Unhandled => Repromise.resolve(`Unhandled),
+      | Handled(ctx) => Repromise.resolve(`Handled(f(ctx)))
+      | Unhandled => Repromise.resolve(`Unhandled),
       res,
     );
-  let mapUnhandled = (res: Repromise.t(result('a)), f) =>
+  let mapUnhandled = (res, f) =>
     Repromise.then_(
       fun
-      | `Unhandled => f()
-      | `Handled(r) => Repromise.resolve(`Handled(r)),
+      | Unhandled => f()
+      | Handled(r) => Repromise.resolve(Handled(r)),
       res,
     );
-  let compose = (a, b, ctx) => flatMap(a(ctx), b);
-  type complete = t(Response.complete);
+  let compose: (t, t) => t = (a, b, ctx) => flatMap(a(ctx), b);
 };
 
-module Combinators = {
-  module Response = {
-    let ok: Machine.complete =
-      (ctx: HttpContext.t(_)) =>
-        Repromise.resolve(
-          `Handled({...ctx, response: Response.setStatus(ctx.response, Ok)}),
-        );
-    let created: Machine.complete =
-      (ctx: HttpContext.t(_)) =>
-        Repromise.resolve(
-          `Handled({
-            ...ctx,
-            response: Response.setStatus(ctx.response, Created),
-          }),
-        );
+let isMethod: Request.Method.t => Machine.t =
+  (method, ctx) =>
+    ctx.request.method == method ?
+      Machine.handled(ctx) : Machine.unhandled(ctx);
+
+let get = isMethod(Request.Method.Get);
+
+let post = isMethod(Request.Method.Post);
+
+let put = isMethod(Request.Method.Put);
+
+let patch = isMethod(Request.Method.Patch);
+
+let delete = isMethod(Request.Method.Delete);
+
+let switch_: list(Machine.t) => Machine.t =
+  (lst, ctx: HttpContext.t) => {
+    let rec aux =
+      fun
+      | [] => Machine.unhandled(ctx)
+      | [hd, ...tail] => Machine.mapUnhandled(hd(ctx), () => aux(tail));
+    aux(lst);
   };
-  let first: list(_) => Machine.complete =
-    (lst, ctx) => {
-      let rec aux =
-        fun
-        | [] => Repromise.resolve(`Unhandled)
-        | [hd, ...tail] => Machine.mapUnhandled(hd(ctx), () => aux(tail));
-      aux(lst);
-    };
-  module Operators = {
-    let (>=) = Machine.flatMap;
-    let (>=>) = Machine.compose;
-  };
+
+let match_ = switch_;
+
+module Operators = {
+  let (=|>) = Machine.flatMap;
+  let (=>>) = Machine.compose;
 };
