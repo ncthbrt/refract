@@ -258,15 +258,22 @@ module Response = {
   };
 };
 
+module HttpContext = {
+  type t = {
+    request: Request.t,
+    response: Response.t,
+  };
+};
+
 module Route = {
   exception RouteDoesNotMatch;
-  exception MalformedPathString;
+  exception MalformedPathString(string);
   type part =
     | Constant(string)
-    | String
-    | Int
-    | UInt
-    | Float
+    | String(string)
+    | Int(string)
+    | UInt(string)
+    | Float(string)
     | Wildcard;
   type t('a) = list(part);
   type evalPart =
@@ -278,24 +285,26 @@ module Route = {
     let rec aux: list(string) => t('a) =
       fun
       | [] => []
-      | ["%d", ...tail] => [Int, ...aux(tail)]
-      | ["%i", ...tail] => [Int, ...aux(tail)]
-      | ["%u", ...tail] => [UInt, ...aux(tail)]
       | ["*", ...tail] => [Wildcard, ...aux(tail)]
-      | ["%f", ...tail] => [Float, ...aux(tail)]
-      | ["%s", ...tail] => [String, ...aux(tail)]
-      | [constant, ...tail] => [Constant(constant), ...aux(tail)];
+      | [hd, ...tail] =>
+        switch (String.split_on_char(':', hd)) {
+        | [constant] => [Constant(constant), ...aux(tail)]
+        | [name, "int"] => [Int(name), ...aux(tail)]
+        | [name, "uint"] => [UInt(name), ...aux(tail)]
+        | [name, "string"] => [String(name), ...aux(tail)]
+        | [name, "float"] => [Float(name), ...aux(tail)]
+        | _ => raise(MalformedPathString("Too many type delimiters"))
+        };
     aux(Str.split(route, "/"));
   };
-  let filterNonValues = route =>
+  let filterNonValues =
     List.filter(
       fun
       | Constant(_) => false
       | Wildcard => false
       | _ => true,
-      route,
     );
-  let evaluate = ({path}: Request.t, route) => {
+  let evaluate = ({request: {path}}: HttpContext.t, route) => {
     let rec aux = (path, route: t('a)) =>
       switch (path, route) {
       | ([], []) => []
@@ -304,22 +313,22 @@ module Route = {
       | ([hd, ...tl], [Constant(str), ...next]) when str == hd =>
         aux(tl, next)
       | (_, [Constant(_), ..._]) => raise(RouteDoesNotMatch)
-      | ([hd, ...tl], [String, ...next]) => [
+      | ([hd, ...tl], [String(_), ...next]) => [
           String(hd),
           ...aux(tl, next),
         ]
-      | ([hd, ...tl], [Int, ...next]) =>
+      | ([hd, ...tl], [Int(_), ...next]) =>
         try ([Int(int_of_string(hd)), ...aux(tl, next)]) {
         | Failure(_) => raise(RouteDoesNotMatch)
         }
-      | ([hd, ...tl], [UInt, ...next]) =>
+      | ([hd, ...tl], [UInt(_), ...next]) =>
         let value =
           try (int_of_string(hd)) {
           | Failure(_) => raise(RouteDoesNotMatch)
           };
         value >= 0 ?
           [Int(value), ...aux(tl, next)] : raise(RouteDoesNotMatch);
-      | ([hd, ...tl], [Float, ...next]) =>
+      | ([hd, ...tl], [Float(_), ...next]) =>
         try ([Float(float_of_string(hd)), ...aux(tl, next)]) {
         | Failure(_) => raise(RouteDoesNotMatch)
         }
@@ -329,13 +338,6 @@ module Route = {
         }
       };
     aux(Str.split(Str.regexp("/"), path), route);
-  };
-};
-
-module HttpContext = {
-  type t = {
-    request: Request.t,
-    response: Response.t,
   };
 };
 
