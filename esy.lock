@@ -325,15 +325,15 @@
     ocaml " >= 4.3.0"
 
 "@opam/ocamlfind@", "@opam/ocamlfind@ >= 1.5.0", "@opam/ocamlfind@ >= 1.5.2", "@opam/ocamlfind@ >= 1.5.3", "@opam/ocamlfind@ >= 1.6.1", "@opam/ocamlfind@ >= 1.7.2", "@opam/ocamlfind@ >= 1.7.3--1", "@opam/ocamlfind@*":
-  version "1.7.3--1"
-  uid "3892b28eaffa574236b3e9564de48b74"
-  resolved "@opam/ocamlfind@1.7.3--1-3892b28eaffa574236b3e9564de48b74.tgz"
+  version "1.8.0"
+  uid b7b306fed2b3c8883149230f4c39d1d1
+  resolved "@opam/ocamlfind@1.8.0-b7b306fed2b3c8883149230f4c39d1d1.tgz"
   dependencies:
     "@esy-ocaml/esy-installer" "^0.0.0"
     "@esy-ocaml/substs" "^0.0.1"
     "@opam/conf-m4" "*"
   peerDependencies:
-    ocaml " >= 3.12.0  < 4.7.0"
+    ocaml " >= 4.0.0"
 
 "@opam/ppx_derivers@ >= 1.0.0":
   version "1.0.0"
@@ -530,7 +530,7 @@ refmterr@^3.0.4:
 
 "repromise@github:aantron/repromise":
   version "0.1.0"
-  resolved "https://codeload.github.com/aantron/repromise/tar.gz/339ba2caf0c5b1cc3e4e6f99a1bc49d47a05291b"
+  resolved "https://codeload.github.com/aantron/repromise/tar.gz/de9e8cb1ee41fe8bf9109f0692fb4470d8b5012f"
   dependencies:
     "@esy-ocaml/esy-installer" "^0.0.0"
     "@opam/ctypes" "^0.13.0"
