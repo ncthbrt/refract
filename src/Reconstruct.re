@@ -11,6 +11,8 @@ module Machine = {
   type t = HttpContext.t => Repromise.t(result);
 };
 
+module Route = Route;
+
 let handled: Machine.t = ctx => Repromise.resolve(Machine.Handled(ctx));
 
 let unhandled: Machine.t = ctx => Repromise.resolve(Machine.Unhandled);

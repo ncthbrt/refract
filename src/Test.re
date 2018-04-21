@@ -1,4 +1,25 @@
-/* [%route "/hello/%s"]((~name, ctx) => ()); */
+/*
+   Goal:
+   Transform:
+   [%route "/hello/%s"]
+   To:
+   (f, ctx) =>
+    switch (Route.evaluate(ctx, [| Constant("hello"), String("name") |])) {
+    | [String(v0)] => f(~name=v0, ctx)
+    | _ => raise(Failure("This case should never be executed"))
+    | exception Route.RouteDoesNotMatch => Reconstruct.unhandled(ctx)
+    };
+
+    Ast representation of this:
+
+
+ */
+/* let a = (f, ctx) =>
+   switch (Route.evaluate(ctx, [Constant("hello"), String("name")])) {
+   | [String(v0)] => f(~name=Some(v0), ctx)
+   | _ => raise(Failure("This case should never be executed"))
+   | exception Route.RouteDoesNotMatch => Reconstruct.unhandled(ctx)
+   }; */
 /*
    Function application:
  Pexp_apply(
@@ -16,51 +37,51 @@
    | exception Not_found => false
    }; */
 /*
- [
+ Switch/Match statement
+  [
+      Pstr_eval(
+        Pexp_match(
+          Pexp_ident "a",
+          [
+                (
+                  Ppat_construct (
+                    "::",
+                    Some(
+                      Ppat_tuple(
+                      [
+                          Ppat_constant(Const_int(1)),
+                          Ppat_construct(
+                            "::",
+                            Some(
+                                Ppat_tuple(
+                                  [
 
-     Pstr_eval
-
-       Pexp_match
-
-         Pexp_ident "a"
-       [
-         <case>
-             Ppat_construct "::"
-             Some
-                 Ppat_tuple
-                 [
-
-                     Ppat_constant Const_int 1
-
-                     Ppat_construct "::"
-                     Some
-
-                         Ppat_tuple
-                         [
-
-                             Ppat_constant Const_int 2
-                             Ppat_construct "[]"
-                             None
-                         ]
-                 ]
-           expression (./Test.re[14,312+12]..[14,312+16])
-             Pexp_construct "true" (./Test.re[14,312+12]..[14,312+16])
-             None
-         <case>
-           pattern (./Test.re[15,329+2]..[15,329+3])
-             Ppat_any
-           expression (./Test.re[15,329+7]..[15,329+12])
-             Pexp_construct "false" (./Test.re[15,329+7]..[15,329+12])
-             None
-         <case>
-           pattern (./Test.re[16,342+2]..[16,342+21])
-             Ppat_exception
-             pattern (./Test.re[16,342+12]..[16,342+21])
-               Ppat_construct "Not_found" (./Test.re[16,342+12]..[16,342+21])
-               None
-           expression (./Test.re[16,342+25]..[16,342+30])
-             Pexp_construct "false" (./Test.re[16,342+25]..[16,342+30])
-             None
-       ]
- ]
-  */
+                                      Ppat_constant(Const_int(2)),
+                                      Ppat_construct ("[]", None)
+                                  ]
+                                )
+                            )
+                          )
+                      ])
+                    )),
+                  Pexp_construct("true"),
+                  None
+                ),
+                (
+                  Ppat_any,
+                  Pexp_construct("false"),
+                  None
+                ),
+                (
+                  Ppat_exception(
+                    Ppat_construct("Not_found"),
+                    None
+                  ),
+                  Pexp_construct ("false"),
+                  None
+                )
+          ]
+      )
+    )
+  ]
+   */

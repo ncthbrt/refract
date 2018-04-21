@@ -10,7 +10,7 @@ type part =
   | Float(string)
   | Wildcard;
 
-type t('a) = list(part);
+type t = list(part);
 
 type evalPart =
   | String(string)
@@ -20,7 +20,7 @@ type evalPart =
 type evaluatedRoute = list(evalPart);
 
 let parse = route => {
-  let rec aux: list(string) => t('a) =
+  let rec aux: list(string) => t =
     fun
     | [] => []
     | ["*", ...tail] => [Wildcard, ...aux(tail)]
@@ -37,7 +37,7 @@ let parse = route => {
 };
 
 let evaluate = ({request: {path}}: HttpContext.t, route) => {
-  let rec aux = (path, route: t('a)) =>
+  let rec aux = (path, route: t) =>
     switch (path, route) {
     | ([], []) => []
     | ([_, ..._], []) => raise(RouteDoesNotMatch)

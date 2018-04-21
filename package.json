@@ -26,7 +26,7 @@
     "@esy-ocaml/esy-installer": "^0.0.0",
     "@esy-ocaml/reason": "^3.0.0",
     "@opam/jbuilder": "^1.0.0-beta14",
-    "@opam/ppxlib": "^0.2.0",
+    "@opam/ocaml-migrate-parsetree": "^1.0.9",
     "refmterr": "^3.0.4",
     "repromise": "github:aantron/repromise"
   },
