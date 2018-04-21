@@ -33,8 +33,7 @@ let mapper = {
           },
         ]),
       )) =>
-      print_endline("hello " ++ str);
-      Ast_helper.(Exp.constant(~loc=e.pexp_loc, Const.string(str)));
+      Ast_helper.(Exp.constant(~loc=e.pexp_loc, Const.string(str)))
     | _ => default_mapper.expr(mapper, e)
     },
 };
