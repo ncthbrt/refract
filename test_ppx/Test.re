@@ -1,6 +1,4 @@
-let () = Js.log("hello");
+let () = 
+  let a = [%route "hello"]; 
+  Js.log(a);
 
-/* let a = [%route "hello"]; */
-Js.log(a);
-
-sdsdsd;

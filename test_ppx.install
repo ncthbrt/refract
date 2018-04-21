@@ -1,7 +1,0 @@
-lib: [
-  "_build/install/default/lib/test_ppx/META" {"META"}
-  "_build/install/default/lib/test_ppx/opam" {"opam"}
-]
-doc: [
-  "_build/install/default/doc/test_ppx/LICENSE"
-]
