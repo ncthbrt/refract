@@ -12,7 +12,8 @@
       ]
     ],
     "install": [
-      "esy-installer"
+      "esy-installer",
+      "reconstruct.install"
     ],
     "buildsInSource": "_build"
   },

@@ -20,35 +20,21 @@ let mapper = {
   ...default_mapper,
   expr: (mapper, e) =>
     switch (e.pexp_desc) {
-    | [@implicit_arity]
-      Pexp_extension(
+    | Pexp_extension((
         {Asttypes.txt: "route", _},
         PStr([
           {
             pstr_desc:
-              Pstr_value(
-                Asttypes.Nonrecursive,
-                [
-                  {
-                    pvb_expr: {
-                      pexp_desc: Pexp_constant(Pconst_string(str, _)),
-                      _,
-                    },
-                    _,
-                  },
-                ],
+              Pstr_eval(
+                {pexp_desc: Pexp_constant(Pconst_string(str, _)), _},
+                _,
               ),
             _,
           },
         ]),
-      ) =>
-      open Ast_helper.Exp;
-      /* let evalRoute =
-         ident(
-           Location.mknoloc(Longident.parse("Reconstruct.Route.evaluate")),
-         ); */
-      let strRet = constant(Pconst_string(str, None));
-      strRet;
+      )) =>
+      print_endline("hello " ++ str);
+      Ast_helper.(Exp.constant(~loc=e.pexp_loc, Const.string(str)));
     | _ => default_mapper.expr(mapper, e)
     },
 };

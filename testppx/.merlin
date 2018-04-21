@@ -1,12 +1,15 @@
 B ../_build/default/src/.reconstruct.objs
+B ../_build/default/testppx/.TestPpx.eobjs
 B /Users/ncthbrt/.esy/3_________________________________________________________________/i/opam__slash__ctypes-0.13.1-0e8eacbe/lib/ctypes
 B /Users/ncthbrt/.esy/3_________________________________________________________________/i/opam__slash__integers-0.2.2-59d2c0dd/lib/integers
 B /Users/ncthbrt/.esy/3_________________________________________________________________/i/opam__slash__ocamlfind-1.8.0-b9cda62a/lib/bytes
 B /Users/ncthbrt/.esy/3_________________________________________________________________/i/opam__slash__ocamlfind-1.8.0-b9cda62a/lib/ocaml
 B /Users/ncthbrt/.esy/3_________________________________________________________________/i/opam__slash__ocamlfind-1.8.0-b9cda62a/lib/ocaml/threads
 B /Users/ncthbrt/.esy/3_________________________________________________________________/i/repromise-0.1.0-4b7d946c/lib/repromise
-FLG -open Reconstruct__ -w -40 -w +26
+FLG -ppx '/Users/ncthbrt/git/reconstruct/_build/default/.ppx/ppx_reconstruct@reconstruct/ppx.exe --as-ppx'
+FLG -w -40 -w +26
 S .
+S ../src
 S /Users/ncthbrt/.esy/3_________________________________________________________________/i/opam__slash__ctypes-0.13.1-0e8eacbe/lib/ctypes
 S /Users/ncthbrt/.esy/3_________________________________________________________________/i/opam__slash__integers-0.2.2-59d2c0dd/lib/integers
 S /Users/ncthbrt/.esy/3_________________________________________________________________/i/opam__slash__ocamlfind-1.8.0-b9cda62a/lib/bytes

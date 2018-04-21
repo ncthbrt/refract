@@ -1,8 +1,8 @@
-B ../_build/default/ppx/.ppx_reconstuct.objs
+B ../_build/default/ppx/.ppx_reconstruct.objs
 B /Users/ncthbrt/.esy/3_________________________________________________________________/i/opam__slash__ocaml_migrate_parsetree-1.0.9-127532cb/lib/ocaml-migrate-parsetree
 B /Users/ncthbrt/.esy/3_________________________________________________________________/i/opam__slash__ocamlfind-1.8.0-b9cda62a/lib/ocaml/compiler-libs
 B /Users/ncthbrt/.esy/3_________________________________________________________________/i/opam__slash__result-1.3.0-15cae760/lib/result
-FLG -w -40 -w +A-4
+FLG -open Ppx_reconstruct -w -40 -w +A-4
 S .
 S /Users/ncthbrt/.esy/3_________________________________________________________________/i/opam__slash__ocaml_migrate_parsetree-1.0.9-127532cb/lib/ocaml-migrate-parsetree
 S /Users/ncthbrt/.esy/3_________________________________________________________________/i/opam__slash__ocamlfind-1.8.0-b9cda62a/lib/ocaml/compiler-libs

@@ -1,47 +1,9 @@
 lib: [
   "_build/install/default/lib/reconstruct/META" {"META"}
   "_build/install/default/lib/reconstruct/opam" {"opam"}
-  "_build/install/default/lib/reconstruct/lib__ASTE.cmi" {"lib__ASTE.cmi"}
-  "_build/install/default/lib/reconstruct/lib__ASTE.cmx" {"lib__ASTE.cmx"}
-  "_build/install/default/lib/reconstruct/lib__ASTE.cmt" {"lib__ASTE.cmt"}
-  "_build/install/default/lib/reconstruct/ASTE.re" {"ASTE.re"}
-  "_build/install/default/lib/reconstruct/lib__Crossplat.cmi" {"lib__Crossplat.cmi"}
-  "_build/install/default/lib/reconstruct/lib__Crossplat.cmx" {"lib__Crossplat.cmx"}
-  "_build/install/default/lib/reconstruct/lib__Crossplat.cmt" {"lib__Crossplat.cmt"}
-  "_build/install/default/lib/reconstruct/Crossplat.re" {"Crossplat.re"}
-  "_build/install/default/lib/reconstruct/lib__HttpContext.cmi" {"lib__HttpContext.cmi"}
-  "_build/install/default/lib/reconstruct/lib__HttpContext.cmx" {"lib__HttpContext.cmx"}
-  "_build/install/default/lib/reconstruct/lib__HttpContext.cmt" {"lib__HttpContext.cmt"}
-  "_build/install/default/lib/reconstruct/HttpContext.re" {"HttpContext.re"}
-  "_build/install/default/lib/reconstruct/lib.cmi" {"lib.cmi"}
-  "_build/install/default/lib/reconstruct/lib.cmx" {"lib.cmx"}
-  "_build/install/default/lib/reconstruct/lib.cmt" {"lib.cmt"}
-  "_build/install/default/lib/reconstruct/lib.ml-gen" {"lib.ml-gen"}
-  "_build/install/default/lib/reconstruct/lib__Reconstruct.cmi" {"lib__Reconstruct.cmi"}
-  "_build/install/default/lib/reconstruct/lib__Reconstruct.cmx" {"lib__Reconstruct.cmx"}
-  "_build/install/default/lib/reconstruct/lib__Reconstruct.cmt" {"lib__Reconstruct.cmt"}
-  "_build/install/default/lib/reconstruct/Reconstruct.re" {"Reconstruct.re"}
-  "_build/install/default/lib/reconstruct/lib__Request.cmi" {"lib__Request.cmi"}
-  "_build/install/default/lib/reconstruct/lib__Request.cmx" {"lib__Request.cmx"}
-  "_build/install/default/lib/reconstruct/lib__Request.cmt" {"lib__Request.cmt"}
-  "_build/install/default/lib/reconstruct/Request.re" {"Request.re"}
-  "_build/install/default/lib/reconstruct/lib__Response.cmi" {"lib__Response.cmi"}
-  "_build/install/default/lib/reconstruct/lib__Response.cmx" {"lib__Response.cmx"}
-  "_build/install/default/lib/reconstruct/lib__Response.cmt" {"lib__Response.cmt"}
-  "_build/install/default/lib/reconstruct/Response.re" {"Response.re"}
-  "_build/install/default/lib/reconstruct/lib__Route.cmi" {"lib__Route.cmi"}
-  "_build/install/default/lib/reconstruct/lib__Route.cmx" {"lib__Route.cmx"}
-  "_build/install/default/lib/reconstruct/lib__Route.cmt" {"lib__Route.cmt"}
-  "_build/install/default/lib/reconstruct/Route.re" {"Route.re"}
-  "_build/install/default/lib/reconstruct/lib__TestAst.cmi" {"lib__TestAst.cmi"}
-  "_build/install/default/lib/reconstruct/lib__TestAst.cmx" {"lib__TestAst.cmx"}
-  "_build/install/default/lib/reconstruct/lib__TestAst.cmt" {"lib__TestAst.cmt"}
-  "_build/install/default/lib/reconstruct/TestAst.re" {"TestAst.re"}
-  "_build/install/default/lib/reconstruct/lib.cma" {"lib.cma"}
-  "_build/install/default/lib/reconstruct/lib.cmxa" {"lib.cmxa"}
-  "_build/install/default/lib/reconstruct/lib.a" {"lib.a"}
-  "_build/install/default/lib/reconstruct/lib.cmxs" {"lib.cmxs"}
-  "_build/install/default/lib/reconstruct/reconstruct.dune" {"reconstruct.dune"}
+]
+bin: [
+  "_build/install/default/bin/TestPpx" {"TestPpx"}
 ]
 doc: [
   "_build/install/default/doc/reconstruct/LICENSE"

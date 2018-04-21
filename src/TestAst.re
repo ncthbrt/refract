@@ -1,3 +1,7 @@
+/* print_endline([%route "/hello/%s"]); */
+/* let a = "hello";
+
+   let a = "hello"; */
 /*
    Goal:
    Transform:

@@ -1,7 +1,8 @@
 (jbuild_version 1)
 
 (executable
- ((name test)
-  (flags (-w -40 -w +26)) 
+ ((name TestPpx)
+  (public_name TestPpx)
+  (flags (-w -40 -w +26))
   (preprocess (pps (ppx_reconstruct)))
 (libraries (reconstruct))))

@@ -225,7 +225,7 @@
   peerDependencies:
     ocaml " >= 4.2.3000"
 
-"@opam/lwt@ >= 2.7.0  < 4.0.0", "@opam/lwt@ >= 3.0.0", "@opam/lwt@*", "@opam/lwt@3.3.0":
+"@opam/lwt@ >= 2.7.0  < 4.0.0", "@opam/lwt@ >= 3.0.0", "@opam/lwt@*":
   version "3.3.0"
   uid d6527433462fadf2f1b8168dbb5cf10e
   resolved "@opam/lwt@3.3.0-d6527433462fadf2f1b8168dbb5cf10e.tgz"
@@ -455,7 +455,7 @@ refmterr@^3.0.4:
   peerDependencies:
     ocaml " >= 4.2.0  < 4.7.0"
 
-"repromise@github:aantron/repromise":
+"repromise@github:aantron/repromise#ee442dab26547bdeef16ce8fdff13e436159013f":
   version "0.1.0"
   resolved "https://codeload.github.com/aantron/repromise/tar.gz/ee442dab26547bdeef16ce8fdff13e436159013f"
   dependencies:
