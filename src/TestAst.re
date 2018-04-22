@@ -1,3 +1,9 @@
+/* (f, ctx) =>
+   switch (Route.evaluate(ctx, [Constant("hello"), String("name")])) {
+   | [String(v0)] => f(~name=v0, ctx)
+   | _ => raise(Failure("This case should never be executed"))
+   | exception Route.RouteDoesNotMatch => Reconstruct.Machine.unhandled(ctx)
+   }; */
 /* print_endline([%route "/hello/%s"]); */
 /* let a = "hello";
 
@@ -15,9 +21,13 @@
     };
 
     Ast representation of this:
-
-
  */
+/* let a = (f, ctx) =>
+   switch (Route.evaluate(ctx, [Constant("hello"), String("name")])) {
+   | [String(v0)] => f(~name=v0, ctx)
+   | _ => raise(Failure("This case should never be executed"))
+   | exception Route.RouteDoesNotMatch => Machine.unhandled(ctx)
+   }; */
 /* let a = (f, ctx) =>
    switch (Route.evaluate(ctx, [Constant("hello"), String("name")])) {
    | [String(v0)] => f(~name=Some(v0), ctx)

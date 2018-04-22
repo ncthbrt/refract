@@ -4,5 +4,5 @@
  ((name TestPpx)
   (public_name TestPpx)
   (flags (-w -40 -w +26))
-  (preprocess (pps (ppx_reconstruct)))
+  (preprocess (pps (reconstruct_ppx)))
 (libraries (reconstruct))))

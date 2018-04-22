@@ -12,12 +12,12 @@ type part =
 
 type t = list(part);
 
-type evalPart =
-  | String(string)
-  | Int(int)
-  | Float(float);
+type resultPart =
+  | StringResult(string)
+  | IntResult(int)
+  | FloatResult(float);
 
-type evaluatedRoute = list(evalPart);
+type result = list(resultPart);
 
 let parse = route => {
   let rec aux: list(string) => t =
@@ -33,7 +33,20 @@ let parse = route => {
       | [name, "float"] => [Float(name), ...aux(tail)]
       | _ => raise(MalformedPathString("Too many type delimiters"))
       };
-  aux(Str.split(Str.regexp("/+"), route));
+  let startsWithSlash =
+    try (String.index(route, '/') == 0) {
+    | Not_found => false
+    };
+  if (! startsWithSlash) {
+    raise(MalformedPathString("A route should always begin with a '/'"));
+  } else {
+    aux(
+      Crossplat.String.split(
+        ~on=Str.regexp("/+"),
+        Crossplat.String.lowercaseAscii(route),
+      ),
+    );
+  };
 };
 
 let evaluate = ({request: {path}}: HttpContext.t, route) => {
@@ -46,11 +59,11 @@ let evaluate = ({request: {path}}: HttpContext.t, route) => {
       aux(tl, next)
     | (_, [Constant(_), ..._]) => raise(RouteDoesNotMatch)
     | ([hd, ...tl], [String(_), ...next]) => [
-        String(hd),
+        StringResult(hd),
         ...aux(tl, next),
       ]
     | ([hd, ...tl], [Int(_), ...next]) =>
-      try ([Int(int_of_string(hd)), ...aux(tl, next)]) {
+      try ([IntResult(int_of_string(hd)), ...aux(tl, next)]) {
       | Failure(_) => raise(RouteDoesNotMatch)
       }
     | ([hd, ...tl], [UInt(_), ...next]) =>
@@ -59,9 +72,9 @@ let evaluate = ({request: {path}}: HttpContext.t, route) => {
         | Failure(_) => raise(RouteDoesNotMatch)
         };
       value >= 0 ?
-        [Int(value), ...aux(tl, next)] : raise(RouteDoesNotMatch);
+        [IntResult(value), ...aux(tl, next)] : raise(RouteDoesNotMatch);
     | ([hd, ...tl], [Float(_), ...next]) =>
-      try ([Float(float_of_string(hd)), ...aux(tl, next)]) {
+      try ([FloatResult(float_of_string(hd)), ...aux(tl, next)]) {
       | Failure(_) => raise(RouteDoesNotMatch)
       }
     | ([_, ...tl], [Wildcard, ...next]) =>

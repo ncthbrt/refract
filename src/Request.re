@@ -18,7 +18,7 @@ module Method = {
     /* Has req body and no res body */
     | Patch;
   let fromString = str =>
-    switch (Crossplat.uppercaseAscii(str)) {
+    switch (Crossplat.String.uppercaseAscii(str)) {
     | "GET" => Some(Get)
     | "HEAD" => Some(Head)
     | "POST" => Some(Post)

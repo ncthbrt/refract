@@ -4,18 +4,9 @@ module Response = Response;
 
 module HttpContext = HttpContext;
 
-module Machine = {
-  type result =
-    | Unhandled
-    | Handled(HttpContext.t);
-  type t = HttpContext.t => Repromise.t(result);
-};
+module Machine = Machine;
 
 module Route = Route;
-
-let handled: Machine.t = ctx => Repromise.resolve(Machine.Handled(ctx));
-
-let unhandled: Machine.t = ctx => Repromise.resolve(Machine.Unhandled);
 
 let map = (res: Repromise.t(Machine.result), f) =>
   Repromise.then_(
@@ -48,7 +39,8 @@ let compose: (Machine.t, Machine.t) => Machine.t =
 
 let isMethod: Request.Method.t => Machine.t =
   (method, ctx) =>
-    ctx.request.method == method ? handled(ctx) : unhandled(ctx);
+    ctx.request.method == method ?
+      Machine.handled(ctx) : Machine.unhandled(ctx);
 
 let get = isMethod(Request.Method.Get);
 
@@ -64,7 +56,7 @@ let switch_: list(Machine.t) => Machine.t =
   (lst, ctx: HttpContext.t) => {
     let rec aux =
       fun
-      | [] => unhandled(ctx)
+      | [] => Machine.unhandled(ctx)
       | [hd, ...tail] => mapUnhandled(hd(ctx), () => aux(tail));
     aux(lst);
   };

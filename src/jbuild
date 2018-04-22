@@ -1,7 +1,7 @@
 (jbuild_version 1)
 
 (library
- ((name reconstruct)
+ ((name reconstruct)  
   (flags (-w -40 -w +26))
   (public_name reconstruct)
-(libraries (repromise))))
+(libraries (repromise str))))
