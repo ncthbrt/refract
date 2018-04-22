@@ -89,7 +89,7 @@ module ResultParts = {
   };
 };
 
-let createRouteAstFromParsedRoute = parsedRoute => {
+let createRouteAst = parsedRoute => {
   open Ast_helper;
   let listConstructorLocation = Location.mknoloc(Longident.parse("[]"));
   let consLocation = Location.mknoloc(Longident.parse("::"));
@@ -112,7 +112,7 @@ let createRouteAstFromParsedRoute = parsedRoute => {
   aux(parsedRoute);
 };
 
-let createRoutePatternFromParsedRoute = parsedRoute => {
+let createRoutePattern = parsedRoute => {
   open Ast_helper;
   let listConstructorLocation = Location.mknoloc(Longident.parse("[]"));
   let consLocation = Location.mknoloc(Longident.parse("::"));
@@ -136,41 +136,54 @@ let createRoutePatternFromParsedRoute = parsedRoute => {
   aux(parsedRoute, 0);
 };
 
-let createRouteApplicationFrom = parsedRoute => {
+let createRouteApplication = parsedRoute => {
   open Ast_helper;
-  let listConstructorLocation = Location.mknoloc(Longident.parse("[]"));
-  let consLocation = Location.mknoloc(Longident.parse("::"));
-  let emptyListConstructor = Pat.construct(listConstructorLocation, None);
-  let (<+>) = (newValue, prev) =>
-    Pat.construct(consLocation, Some(Pat.tuple([newValue, prev])));
-  open ResultParts;
-  let rec aux = (route, count) =>
-    Reconstruct.Route.(
-      switch (route) {
-      | [] => emptyListConstructor
-      | [String(_), ...tail] =>
-        aux(tail, count + 1) <+> string("v" ++ string_of_int(count))
-      | [Int(_), ...tail] =>
-        aux(tail, count + 1) <+> int("v" ++ string_of_int(count))
-      | [UInt(_), ...tail] =>
-        aux(tail, count + 1) <+> int("v" ++ string_of_int(count))
-      | [Float(_), ...tail] =>
-        aux(tail, count + 1) <+> floatP("v" ++ string_of_int(count))
-      | [_, ...tail] => aux(tail, count)
-      }
+  let f = Exp.ident(Location.mknoloc(Longident.parse("f")));
+  let ctx = (
+    Asttypes.Nolabel,
+    Exp.ident(Location.mknoloc(Longident.parse("ctx"))),
+  );
+  let identV_n = count =>
+    Exp.ident(
+      Location.mknoloc(Longident.parse("v" ++ string_of_int(count))),
     );
-  aux(parsedRoute, 0);
+  let lbl =
+    fun
+    | "" => Asttypes.Nolabel
+    | name => Asttypes.Labelled(name);
+  let foldr = ((prev: list(_), i: int), item) =>
+    switch (item) {
+    | Reconstruct.Route.String(name) => (
+        [(lbl(name), identV_n(i)), ...prev],
+        i,
+      )
+    | Reconstruct.Route.Int(name) => (
+        [(lbl(name), identV_n(i)), ...prev],
+        i + 1,
+      )
+    | Reconstruct.Route.UInt(name) => (
+        [(lbl(name), identV_n(i)), ...prev],
+        i + 1,
+      )
+    | Reconstruct.Route.Float(name) => (
+        [(lbl(name), identV_n(i)), ...prev],
+        i + 1,
+      )
+    | _ => (prev, i)
+    };
+  let args =
+    [ctx, ...List.fold_left(foldr, ([], 0), parsedRoute) |> fst] |> List.rev;
+  Exp.apply(f, args);
 };
 
 let createRouteMachine = (~loc, parsedRoute) =>
   fun%expr (f, ctx) =>
     switch (
-      Reconstruct.Route.evaluate(
-        ctx,
-        [%e createRouteAstFromParsedRoute(parsedRoute)],
-      )
+      Reconstruct.Route.evaluate(ctx, [%e createRouteAst(parsedRoute)])
     ) {
-    | [%p createRoutePatternFromParsedRoute(parsedRoute)] => f("hello3", ctx)
+    | [%p createRoutePattern(parsedRoute)] =>
+      %e
+      createRouteApplication(parsedRoute)
     | a =>
       print_int(List.length(a));
       raise(

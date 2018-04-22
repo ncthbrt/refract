@@ -1,32 +1,32 @@
 let () = {
-  let a = [%route "/what/name:string"];
-  let p =
-    Repromise.then_(
-      result => Repromise.resolve(),
-      a(
-        (str, ctx) => {
-          print_endline("hello" ++ str);
-          Reconstruct.Machine.handled(ctx);
-        },
-        {
-          request: {
-            path: "/what/frog",
-            headers: [],
-            method: Get,
-            body: Obj.magic("world"),
-          },
-          response: Obj.magic("world"),
-        },
-      ),
-    );
-  ();
-  /* Array.iteri(
-       (v, i) =>
-         print_int(
-           v,
-           /* print_newline(); */
-         ),
-       Array.make(100, 1),
-     ); */
-  /* print_endline(a("hello", Obj.magic("world")) ++ " world"); */
+  let unlabelledNameRoute = [%route "/hello/:string"];
+  let labelledNameRoute = [%route "/hello/name:string"];
+  let ctx =
+    Reconstruct.HttpContext.{
+      request: {
+        path: "/hello/alfred",
+        headers: [],
+        method: Get,
+        body: Obj.magic("world"),
+      },
+      response: Obj.magic("world"),
+    };
+  ignore(
+    unlabelledNameRoute(
+      (name, ctx) => {
+        print_endline("hello unlabelled " ++ name);
+        Reconstruct.Machine.handled(ctx);
+      },
+      ctx,
+    ),
+  );
+  ignore(
+    labelledNameRoute(
+      (~name, ctx) => {
+        print_endline("hello labelled " ++ name);
+        Reconstruct.Machine.handled(ctx);
+      },
+      ctx,
+    ),
+  );
 };
