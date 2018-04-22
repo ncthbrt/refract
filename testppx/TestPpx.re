@@ -1,6 +1,4 @@
 let () = {
-  let unlabelledNameRoute = [%route "/hello/:string"];
-  let labelledNameRoute = [%route "/hello/name:string"];
   let ctx =
     Reconstruct.HttpContext.{
       request: {
@@ -12,19 +10,19 @@ let () = {
       response: Obj.magic("world"),
     };
   ignore(
-    unlabelledNameRoute(
-      (name, ctx) => {
+    [%route "/hello/:string"](
+      name => {
         print_endline("hello unlabelled " ++ name);
-        Reconstruct.Machine.handled(ctx);
+        Reconstruct.Machine.handled;
       },
       ctx,
     ),
   );
   ignore(
-    labelledNameRoute(
-      (~name, ctx) => {
+    [%route "/hello/name:string"](
+      (~name) => {
         print_endline("hello labelled " ++ name);
-        Reconstruct.Machine.handled(ctx);
+        Reconstruct.Machine.handled;
       },
       ctx,
     ),
