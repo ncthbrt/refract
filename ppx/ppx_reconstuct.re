@@ -120,18 +120,16 @@ let createRoutePatternFromParsedRoute = parsedRoute => {
   let (<+>) = (newValue, prev) =>
     Pat.construct(consLocation, Some(Pat.tuple([newValue, prev])));
   open ResultParts;
+  let name = count => "v" ++ string_of_int(count);
   let rec aux = (route, count) =>
     Reconstruct.Route.(
       switch (route) {
       | [] => emptyListConstructor
       | [String(_), ...tail] =>
-        string("v" ++ string_of_int(count)) <+> aux(tail, count + 1)
-      | [Int(_), ...tail] =>
-        int("v" ++ string_of_int(count)) <+> aux(tail, count + 1)
-      | [UInt(_), ...tail] =>
-        int("v" ++ string_of_int(count)) <+> aux(tail, count + 1)
-      | [Float(_), ...tail] =>
-        floatP("v" ++ string_of_int(count)) <+> aux(tail, count + 1)
+        string(name(count)) <+> aux(tail, count + 1)
+      | [Int(_), ...tail] => int(name(count)) <+> aux(tail, count + 1)
+      | [UInt(_), ...tail] => int(name(count)) <+> aux(tail, count + 1)
+      | [Float(_), ...tail] => floatP(name(count)) <+> aux(tail, count + 1)
       | [_, ...tail] => aux(tail, count)
       }
     );
@@ -166,10 +164,13 @@ let createRouteApplicationFrom = parsedRoute => {
 
 let createRouteMachine = (~loc, parsedRoute) =>
   fun%expr (f, ctx) =>
-    switch ([%e createRouteAstFromParsedRoute(parsedRoute)]) {
-    | [%p createRoutePatternFromParsedRoute(parsedRoute)] =>
-      Reconstruct.Machine.unhandled(ctx)
-    /* f("hello3", ctx) */
+    switch (
+      Reconstruct.Route.evaluate(
+        ctx,
+        [%e createRouteAstFromParsedRoute(parsedRoute)],
+      )
+    ) {
+    | [%p createRoutePatternFromParsedRoute(parsedRoute)] => f("hello3", ctx)
     | a =>
       print_int(List.length(a));
       raise(
