@@ -1,8 +1,8 @@
+module HttpContext = HttpContext;
+
 module Request = Request;
 
 module Response = Response;
-
-module HttpContext = HttpContext;
 
 module Machine = Machine;
 

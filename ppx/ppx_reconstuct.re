@@ -16,6 +16,8 @@ open Ast_mapper;
 
 open Parsetree;
 
+exception MalformedPathStringWithLocation(exn, Location.t);
+
 module PathParts = {
   let floatP = name => {
     open Ast_helper;
@@ -184,13 +186,12 @@ let createRouteMachine = (~loc, parsedRoute) =>
     | [%p createRoutePattern(parsedRoute)] =>
       %e
       createRouteApplication(parsedRoute)
-    | a =>
-      print_int(List.length(a));
+    | _ =>
       raise(
         Failure(
           "This expression should never execute. It means that there is a bug in the routing code",
         ),
-      );
+      )
     | exception Reconstruct.Route.RouteDoesNotMatch =>
       Reconstruct.Machine.unhandled(ctx)
     };
@@ -205,23 +206,39 @@ let mapper = {
           {
             pstr_desc:
               Pstr_eval(
-                {pexp_desc: Pexp_constant(Pconst_string(str, _)), _},
+                {
+                  pexp_desc: Pexp_constant(Pconst_string(str, _)),
+                  pexp_loc: strLoc,
+                  _,
+                },
                 _,
               ),
             _,
           },
         ]),
       )) =>
-      let parsedRoute = Reconstruct.Route.parse(str);
-      createRouteMachine(~loc=e.pexp_loc, parsedRoute);
+      try (createRouteMachine(~loc=e.pexp_loc, Reconstruct.Route.parse(str))) {
+      | Reconstruct.Route.MalformedPathString(_) as e =>
+        raise(MalformedPathStringWithLocation(e, strLoc))
+      }
     | _ => default_mapper.expr(mapper, e)
     },
 };
 
-let () =
+let () = {
+  Location.register_error_of_exn(
+    fun
+    | MalformedPathStringWithLocation(
+        Reconstruct.Route.MalformedPathString(reason),
+        loc,
+      ) =>
+      Some(Location.error(~loc, reason))
+    | _ => None,
+  );
   Migrate_parsetree.(
     Driver.register(
       ~name="ppx_reconstruct", Versions.ocaml_406, (_config, _cookies) =>
       mapper
     )
   );
+};

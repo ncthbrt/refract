@@ -19,6 +19,11 @@ type resultPart =
 
 type result = list(resultPart);
 
+let validateName =
+  fun
+  | "" => true
+  | name => Str.string_match(Str.regexp("^[a-z_][0-9a-zA-Z_']*$"), name, 0);
+
 let parse = route => {
   let rec aux: list(string) => t =
     fun
@@ -27,10 +32,27 @@ let parse = route => {
     | [hd, ...tail] =>
       switch (String.split_on_char(':', hd)) {
       | [constant] => [Constant(constant), ...aux(tail)]
-      | [name, "int"] => [Int(name), ...aux(tail)]
-      | [name, "uint"] => [UInt(name), ...aux(tail)]
-      | [name, "string"] => [String(name), ...aux(tail)]
-      | [name, "float"] => [Float(name), ...aux(tail)]
+      | [name, "int"] when validateName(name) => [Int(name), ...aux(tail)]
+      | [name, "uint"] when validateName(name) => [
+          UInt(name),
+          ...aux(tail),
+        ]
+      | [name, "string"] when validateName(name) => [
+          String(name),
+          ...aux(tail),
+        ]
+      | [name, "float"] when validateName(name) => [
+          Float(name),
+          ...aux(tail),
+        ]
+      | [name, _] when ! validateName(name) =>
+        raise(
+          MalformedPathString("Identifier Name " ++ name ++ " not allowed"),
+        )
+      | [name, type_] when ! validateName(name) =>
+        raise(
+          MalformedPathString("Type " ++ type_ ++ "is not yet supported"),
+        )
       | _ => raise(MalformedPathString("Too many type delimiters"))
       };
   let startsWithSlash =
