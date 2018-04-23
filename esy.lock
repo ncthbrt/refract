@@ -609,7 +609,7 @@ refmterr@^3.0.4:
   peerDependencies:
     ocaml " >= 4.2.0  < 4.7.0"
 
-"repromise@github:aantron/repromise#ee442dab26547bdeef16ce8fdff13e436159013f":
+"repromise@github:aantron/repromise":
   version "0.1.0"
   resolved "https://codeload.github.com/aantron/repromise/tar.gz/ee442dab26547bdeef16ce8fdff13e436159013f"
   dependencies:

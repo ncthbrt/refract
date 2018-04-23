@@ -29,7 +29,7 @@
     "@opam/ocaml-migrate-parsetree": "^1.0.9",
     "@opam/ppxlib": "^0.2.0",
     "refmterr": "^3.0.4",
-    "repromise": "github:aantron/repromise#ee442dab26547bdeef16ce8fdff13e436159013f"
+    "repromise": "github:aantron/repromise"
   },
   "peerDependencies": {
     "ocaml": "~4.6.0"
