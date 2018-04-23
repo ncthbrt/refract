@@ -45,6 +45,7 @@ lib: [
 ]
 bin: [
   "_build/install/default/bin/TestPpx" {"TestPpx"}
+  "_build/install/default/bin/CommonTests" {"CommonTests"}
 ]
 doc: [
   "_build/install/default/doc/reconstruct/LICENSE"

@@ -1,0 +1,9 @@
+
+(jbuild_version 1)
+
+(executable
+ ((name Tests)
+  (public_name CommonTests)
+  (flags (-w -40 -w +26))
+  (preprocess (pps (reconstruct_ppx)))
+  (libraries (alcotest reconstruct))))
