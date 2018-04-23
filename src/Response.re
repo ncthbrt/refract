@@ -181,6 +181,12 @@ module StatusCode = {
     | NetworkAuthenticationRequired => 511;
 };
 
+module Body = {
+  type t =
+    | String(string)
+    | Bytes(bytes);
+};
+
 type t = {
   status: StatusCode.t,
   headers: array((string, string)),

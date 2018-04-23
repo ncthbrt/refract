@@ -53,10 +53,3 @@ type t = {
   method: Method.t,
   body: Body.t,
 };
-
-let headers = ({headers}) => headers;
-
-let header = ({headers}, header) =>
-  try (snd(List.find(((k, _)) => k == header, headers))) {
-  | Not_found => None
-  };
