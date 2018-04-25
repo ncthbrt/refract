@@ -171,20 +171,7 @@
   peerDependencies:
     ocaml " >= 4.1.0"
 
-"@opam/cohttp-lwt@^1.0.2":
-  version "1.0.2"
-  uid "19fd739822d2d35050b30da6e6281451"
-  resolved "@opam/cohttp-lwt@1.0.2-19fd739822d2d35050b30da6e6281451.tgz"
-  dependencies:
-    "@esy-ocaml/esy-installer" "^0.0.0"
-    "@esy-ocaml/substs" "^0.0.1"
-    "@opam/cohttp" " >= 1.0.0"
-    "@opam/jbuilder" " >= 1.0.0-beta10"
-    "@opam/lwt" "*"
-  peerDependencies:
-    ocaml " >= 4.3.0"
-
-"@opam/cohttp@ >= 1.0.0", "@opam/cohttp@^1.1.0":
+"@opam/cohttp@^1.1.0":
   version "1.1.0"
   uid b13fb52106360bf2de786b553be1f43e
   resolved "@opam/cohttp@1.1.0-b13fb52106360bf2de786b553be1f43e.tgz"
