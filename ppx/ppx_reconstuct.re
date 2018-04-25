@@ -196,12 +196,34 @@ let createRouteMachine = (~loc, parsedRoute) =>
       Reconstruct.Machine.unhandled(ctx)
     };
 
+let createRouteMachineWithMethod = (~loc, method, parsedRoute) =>
+  fun%expr (f, ctx) =>
+    switch (
+      Reconstruct.Route.evaluate(ctx, [%e createRouteAst(parsedRoute)])
+    ) {
+    | [%p createRoutePattern(parsedRoute)] => (
+        f =>
+          Reconstruct.compose(
+            [%e method],
+            [%e createRouteApplication(parsedRoute)](f),
+          )
+      )
+    | _ =>
+      raise(
+        Failure(
+          "This expression should never execute. It means that there is a bug in the routing code",
+        ),
+      )
+    | exception Reconstruct.Route.RouteDoesNotMatch =>
+      Reconstruct.Machine.unhandled(ctx)
+    };
+
 let mapper = {
   ...default_mapper,
   expr: (mapper, e) =>
     switch (e.pexp_desc) {
     | Pexp_extension((
-        {Asttypes.txt: "route", _},
+        {Asttypes.txt: extensionName, _},
         PStr([
           {
             pstr_desc:
@@ -217,9 +239,80 @@ let mapper = {
           },
         ]),
       )) =>
-      try (createRouteMachine(~loc=e.pexp_loc, Reconstruct.Route.parse(str))) {
-      | Reconstruct.Route.MalformedPathString(_) as e =>
-        raise(MalformedPathStringWithLocation(e, strLoc))
+      switch (extensionName) {
+      | "route" =>
+        try (
+          createRouteMachine(~loc=e.pexp_loc, Reconstruct.Route.parse(str))
+        ) {
+        | Reconstruct.Route.MalformedPathString(_) as e =>
+          raise(MalformedPathStringWithLocation(e, strLoc))
+        }
+      | "route.get" =>
+        try (
+          createRouteMachineWithMethod(
+            ~loc=e.pexp_loc,
+            Ast_helper.Exp.ident(
+              Location.mknoloc(Longident.parse("Reconstruct.get")),
+            ),
+            Reconstruct.Route.parse(str),
+          )
+        ) {
+        | Reconstruct.Route.MalformedPathString(_) as e =>
+          raise(MalformedPathStringWithLocation(e, strLoc))
+        }
+      | "route.post" =>
+        try (
+          createRouteMachineWithMethod(
+            ~loc=e.pexp_loc,
+            Ast_helper.Exp.ident(
+              Location.mknoloc(Longident.parse("Reconstruct.post")),
+            ),
+            Reconstruct.Route.parse(str),
+          )
+        ) {
+        | Reconstruct.Route.MalformedPathString(_) as e =>
+          raise(MalformedPathStringWithLocation(e, strLoc))
+        }
+      | "route.delete" =>
+        try (
+          createRouteMachineWithMethod(
+            ~loc=e.pexp_loc,
+            Ast_helper.Exp.ident(
+              Location.mknoloc(Longident.parse("Reconstruct.delete")),
+            ),
+            Reconstruct.Route.parse(str),
+          )
+        ) {
+        | Reconstruct.Route.MalformedPathString(_) as e =>
+          raise(MalformedPathStringWithLocation(e, strLoc))
+        }
+      | "route.patch" =>
+        try (
+          createRouteMachineWithMethod(
+            ~loc=e.pexp_loc,
+            Ast_helper.Exp.ident(
+              Location.mknoloc(Longident.parse("Reconstruct.patch")),
+            ),
+            Reconstruct.Route.parse(str),
+          )
+        ) {
+        | Reconstruct.Route.MalformedPathString(_) as e =>
+          raise(MalformedPathStringWithLocation(e, strLoc))
+        }
+      | "route.put" =>
+        try (
+          createRouteMachineWithMethod(
+            ~loc=e.pexp_loc,
+            Ast_helper.Exp.ident(
+              Location.mknoloc(Longident.parse("Reconstruct.put")),
+            ),
+            Reconstruct.Route.parse(str),
+          )
+        ) {
+        | Reconstruct.Route.MalformedPathString(_) as e =>
+          raise(MalformedPathStringWithLocation(e, strLoc))
+        }
+      | _ => default_mapper.expr(mapper, e)
       }
     | _ => default_mapper.expr(mapper, e)
     },

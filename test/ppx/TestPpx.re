@@ -5,7 +5,7 @@ let () = {
       Reconstruct.Machine.handled;
     });
   let labelledMachine =
-    [%route "/hello/name:string"]((~name) => {
+    [%route.get "/hello/name:string"]((~name) => {
       print_endline("hello labelled " ++ name);
       Reconstruct.Machine.handled;
     });

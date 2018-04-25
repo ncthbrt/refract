@@ -372,6 +372,20 @@
   peerDependencies:
     ocaml " >= 4.2.0"
 
+"@opam/lwt@^4.0.1":
+  version "4.0.1"
+  uid "500e177eb31e84ddfe24ee6b64bd0c64"
+  resolved "@opam/lwt@4.0.1-500e177eb31e84ddfe24ee6b64bd0c64.tgz"
+  dependencies:
+    "@esy-ocaml/esy-installer" "^0.0.0"
+    "@esy-ocaml/substs" "^0.0.1"
+    "@opam/cppo" " >= 1.1.0"
+    "@opam/jbuilder" " >= 1.0.0-beta14"
+    "@opam/ocamlfind" " >= 1.7.3--1"
+    "@opam/result" "*"
+  peerDependencies:
+    ocaml " >= 4.2.0"
+
 "@opam/lwt_react@*":
   version "1.1.1"
   uid "9e1edf998c6c3ab6ea7092f054c97c78"
