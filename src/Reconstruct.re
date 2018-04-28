@@ -24,7 +24,7 @@ let mapUnhandled = (res, f) =>
     res,
   );
 
-let flatMap = (res, f: HttpContext.t => Repromise.t(Machine.result)) =>
+let flatMap = (res: Repromise.t(Machine.result), f: Machine.t) =>
   Repromise.then_(
     fun
     | Machine.Handled(ctx) => f(ctx)

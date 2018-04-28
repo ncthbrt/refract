@@ -173,8 +173,7 @@ let createRouteApplication = parsedRoute => {
       )
     | _ => (prev, i)
     };
-  let args =
-    [ctx, ...List.fold_left(foldr, ([], 0), parsedRoute) |> fst] |> List.rev;
+  let args = List.fold_left(foldr, ([], 0), parsedRoute) |> fst |> List.rev;
   Exp.apply(f, args);
 };
 
@@ -184,8 +183,7 @@ let createRouteMachine = (~loc, parsedRoute) =>
       Reconstruct.Route.evaluate(ctx, [%e createRouteAst(parsedRoute)])
     ) {
     | [%p createRoutePattern(parsedRoute)] =>
-      %e
-      createRouteApplication(parsedRoute)
+      [%e createRouteApplication(parsedRoute)](ctx)
     | _ =>
       raise(
         Failure(
@@ -197,16 +195,15 @@ let createRouteMachine = (~loc, parsedRoute) =>
     };
 
 let createRouteMachineWithMethod = (~loc, method, parsedRoute) =>
-  fun%expr (f, ctx) =>
+  fun%expr (f, ctx: Reconstruct.HttpContext.t) =>
     switch (
       Reconstruct.Route.evaluate(ctx, [%e createRouteAst(parsedRoute)])
     ) {
-    | [%p createRoutePattern(parsedRoute)] => (
-        f =>
-          Reconstruct.compose(
-            [%e method],
-            [%e createRouteApplication(parsedRoute)](f),
-          )
+    | [%p createRoutePattern(parsedRoute)] =>
+      Reconstruct.compose(
+        [%e method],
+        [%e createRouteApplication(parsedRoute)],
+        ctx,
       )
     | _ =>
       raise(
