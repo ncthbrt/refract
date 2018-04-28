@@ -7,4 +7,4 @@
   (ppx_runtime_libraries (reconstruct str))
   (preprocess (pps (ppxlib.metaquot)))
   (flags (:standard -w +A-4))
-(libraries (ocaml-migrate-parsetree reconstruct str))))
+(libraries (ppxlib reconstruct str))))
