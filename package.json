@@ -18,6 +18,9 @@
     ],
     "buildsInSource": "_build"
   },
+  "resolutions": {
+    "**/@opam/lwt": "3.3.0"
+  },
   "scripts": {
     "clean": "rm -rf _build/ lib/"
   },
@@ -35,7 +38,6 @@
   },
   "devDependencies": {
     "@esy-ocaml/merlin": "*",
-    "bs-platform": "^3.0.0",
     "ocaml": "~4.6.0"
   }
 }

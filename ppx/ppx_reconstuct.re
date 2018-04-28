@@ -141,10 +141,6 @@ let createRoutePattern = parsedRoute => {
 let createRouteApplication = parsedRoute => {
   open Ast_helper;
   let f = Exp.ident(Location.mknoloc(Longident.parse("f")));
-  let ctx = (
-    Asttypes.Nolabel,
-    Exp.ident(Location.mknoloc(Longident.parse("ctx"))),
-  );
   let identV_n = count =>
     Exp.ident(
       Location.mknoloc(Longident.parse("v" ++ string_of_int(count))),
@@ -214,6 +210,16 @@ let createRouteMachineWithMethod = (~loc, method, parsedRoute) =>
     | exception Reconstruct.Route.RouteDoesNotMatch =>
       Reconstruct.Machine.unhandled(ctx)
     };
+
+let createBoundMachine = (mapper, binding, e') => {
+  let e'' = mapper.expr(mapper, binding.pvb_expr);
+  let e' = mapper.expr(mapper, e');
+  open Ast_helper.Exp;
+  let then_ = ident(Location.mknoloc(Longident.parse("Repromise.then_")));
+  let x = binding.pvb_pat;
+  let fun_ = fun_(Asttypes.Nolabel, None, x, e');
+  apply(then_, [(Asttypes.Nolabel, fun_), (Asttypes.Nolabel, e'')]);
+};
 
 let mapper = {
   ...default_mapper,
@@ -311,6 +317,24 @@ let mapper = {
         }
       | _ => default_mapper.expr(mapper, e)
       }
+    | [@implicit_arity]
+      Pexp_extension(
+        {Asttypes.txt: "machine", _},
+        PStr([
+          {
+            pstr_desc:
+              Pstr_eval(
+                {
+                  pexp_desc: Pexp_let(Asttypes.Nonrecursive, [binding], e'),
+                  _,
+                },
+                _,
+              ),
+            _,
+          },
+        ]),
+      ) =>
+      createBoundMachine(mapper, e)
     | _ => default_mapper.expr(mapper, e)
     },
 };

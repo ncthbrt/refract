@@ -1,10 +1,18 @@
 module HttpContext = HttpContext;
 
-module Request = Request;
-
-module Response = Response;
-
 module Machine = Machine;
+
+module Request = {
+  include Request;
+  let body = (decoder, f, ctx: HttpContext.t) =>
+    Repromise.then_(body => f(body, ctx), decoder(ctx));
+  let bodyText: (string => Machine.t) => Machine.t =
+    f => body((_) => Repromise.resolve(""), f);
+};
+
+module Response = {
+  include Response;
+};
 
 module Route = Route;
 
@@ -63,7 +71,19 @@ let switch_: list(Machine.t) => Machine.t =
 
 let match_ = switch_;
 
+let zip:
+  (
+    ('a => Machine.t) => Machine.t,
+    ('b => Machine.t) => Machine.t,
+    ('a, 'b) => Machine.t
+  ) =>
+  Machine.t =
+  (ma, mb, f, ctx) => ma(a => mb(f(a)), ctx);
+
+let convolute = zip;
+
 module Operators = {
   let (=|>) = flatMap;
   let (=>>) = compose;
+  let (^@) = (ma, mb) => zip(ma, mb);
 };

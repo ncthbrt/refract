@@ -294,7 +294,7 @@
   peerDependencies:
     ocaml " >= 4.2.3000"
 
-"@opam/lwt@ >= 2.7.0  < 4.0.0":
+"@opam/lwt@ >= 2.7.0  < 4.0.0", "@opam/lwt@ >= 3.0.0", "@opam/lwt@*", "@opam/lwt@3.3.0":
   version "3.3.0"
   uid d6527433462fadf2f1b8168dbb5cf10e
   resolved "@opam/lwt@3.3.0-d6527433462fadf2f1b8168dbb5cf10e.tgz"
@@ -306,20 +306,6 @@
     "@opam/ocaml-migrate-parsetree" "*"
     "@opam/ocamlfind" " >= 1.7.3--1"
     "@opam/ppx_tools_versioned" " >= 5.0.1"
-    "@opam/result" "*"
-  peerDependencies:
-    ocaml " >= 4.2.0"
-
-"@opam/lwt@ >= 3.0.0", "@opam/lwt@*":
-  version "4.0.1"
-  uid "500e177eb31e84ddfe24ee6b64bd0c64"
-  resolved "@opam/lwt@4.0.1-500e177eb31e84ddfe24ee6b64bd0c64.tgz"
-  dependencies:
-    "@esy-ocaml/esy-installer" "^0.0.0"
-    "@esy-ocaml/substs" "^0.0.1"
-    "@opam/cppo" " >= 1.1.0"
-    "@opam/jbuilder" " >= 1.0.0-beta14"
-    "@opam/ocamlfind" " >= 1.7.3--1"
     "@opam/result" "*"
   peerDependencies:
     ocaml " >= 4.2.0"
@@ -591,10 +577,6 @@
     "@opam/react" "*"
   peerDependencies:
     ocaml " >= 4.2.3000"
-
-bs-platform@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/bs-platform/-/bs-platform-3.0.0.tgz#38f200730db52fdea37819376b6ac3dfb20244c0"
 
 ocaml@~4.6.0:
   version "4.6.1"
