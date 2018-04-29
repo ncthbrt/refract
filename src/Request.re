@@ -48,7 +48,7 @@ module Body = {
 };
 
 type t = {
-  path: string,
+  resource: string,
   headers: list((string, option(string))),
   method: Method.t,
   body: Body.t,

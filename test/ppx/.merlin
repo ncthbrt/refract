@@ -7,7 +7,7 @@ B /Users/ncthbrt/.esy/3_________________________________________________________
 B /Users/ncthbrt/.esy/3_________________________________________________________________/i/opam__slash__ocamlfind-1.8.0-b9cda62a/lib/ocaml/threads
 B /Users/ncthbrt/.esy/3_________________________________________________________________/i/repromise-0.1.0-f379a1c2/lib/repromise
 FLG -ppx '/Users/ncthbrt/git/reconstruct/_build/default/.ppx/reconstruct_ppx@reconstruct/ppx.exe --as-ppx'
-FLG -w -40 -w +26
+FLG -w +26
 S .
 S ../../src
 S /Users/ncthbrt/.esy/3_________________________________________________________________/i/opam__slash__ctypes-0.13.1-0e8eacbe/lib/ctypes

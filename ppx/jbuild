@@ -6,5 +6,6 @@
   (kind ppx_rewriter)
   (ppx_runtime_libraries (reconstruct str))
   (preprocess (pps (ppxlib.metaquot)))
-  (flags (:standard -w +A-4))
+  #; (flags (:standard -w +A-4-42-40))
+  (flags (-w -40 -w +26 -w +A-4))
 (libraries (ppxlib reconstruct str))))

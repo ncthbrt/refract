@@ -21,7 +21,7 @@ B /Users/ncthbrt/.esy/3_________________________________________________________
 B /Users/ncthbrt/.esy/3_________________________________________________________________/i/opam__slash__sexplib0-100000000.11.0-a70b5ea9/lib/sexplib0
 B /Users/ncthbrt/.esy/3_________________________________________________________________/i/opam__slash__stdio-100000000.11.0-e6495f92/lib/stdio
 B /Users/ncthbrt/.esy/3_________________________________________________________________/i/repromise-0.1.0-f379a1c2/lib/repromise
-FLG -open Reconstruct_ppx -w -40 -w +A-4
+FLG -open Reconstruct_ppx -w -40 -w +26 -w +A-4
 FLG -ppx '/Users/ncthbrt/git/reconstruct/_build/default/.ppx/ppxlib.metaquot/ppx.exe --as-ppx --cookie '\''library-name="reconstruct_ppx"'\'''
 S .
 S ../src

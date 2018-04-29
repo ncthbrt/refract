@@ -14,4 +14,6 @@ module String = {
   let uppercaseAscii = String.map(uppercaseAsciiChar);
   let lowercaseAscii = String.map(lowercaseAsciiChar);
   let split = (~on, str) => Str.split(on, str);
+  let splitFirst = (~on, str) => Str.bounded_split(on, str, 2);
+  let matches = (r, str) => Str.string_match(r, str, 0);
 };
