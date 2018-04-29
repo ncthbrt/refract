@@ -19,8 +19,8 @@ let () =
           print_endline("hello labelled " ++ name ++ " " ++ body);
           Reconstruct.Machine.handled;
         }),
-        [%route.post "/hello4/name:string?offset:int=?&limit:uint=?"](
-          (~name, ~offset=0, ~limit=10) => {
+        [%route.post "/hello4/name:string?offset:int=?&limit:uint=?&cached=?"](
+          (~name, ~offset=0, ~limit=10, ~cached) => {
           let%mesh body = Reconstruct.Request.bodyText;
           print_endline("hello labelled " ++ name ++ " " ++ body);
           Reconstruct.Machine.handled;

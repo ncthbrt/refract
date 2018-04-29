@@ -85,7 +85,15 @@ let parse: string => t =
         raise(
           MalformedPathString("Type " ++ type_ ++ "is not yet supported"),
         )
-      | [name] => FlagQuery(name)
+      | [name] when isOptional => FlagQuery(name)
+      | [name] =>
+        raise(
+          MalformedPathString(
+            "No type annotation on '"
+            ++ name
+            ++ "' in query params. Either add '=?' to make it a flag, add a type annotation or do both.",
+          ),
+        )
       | _ => raise(MalformedPathString("Too many type delimiters"))
       };
     };
