@@ -1,6 +1,12 @@
 exception RouteDoesNotMatch;
 
+exception MalformedRouteString(string);
+
 exception MalformedPathString(string);
+
+exception MalformedQueryString(string);
+
+exception MalformedQueryParameter(string, string, exn);
 
 type path =
   | Constant(string)
@@ -27,13 +33,13 @@ type resultPart =
   | IntResult(int)
   | FloatResult(float);
 
-type queryResult =
+type queryResultPart =
   | StringQueryResult(option(string))
   | IntQueryResult(option(int))
   | FloatQueryResult(option(float))
   | BoolQueryResult(option(bool));
 
-type result = (list(resultPart), list(queryResult));
+type result = (list(resultPart), list(queryResultPart));
 
 let validateName =
   fun
@@ -49,20 +55,20 @@ let parse: string => t =
         | [name] => (name, String.length(name) < String.length(item))
         | [item, rest] =>
           raise(
-            MalformedPathString(
+            MalformedRouteString(
               "Expected '&' or end of string after '=?' but got " ++ rest,
             ),
           )
         | [a, ...b] =>
           print_endline(a);
           raise(
-            MalformedPathString(
+            MalformedRouteString(
               "Too many optional annotations ('=?') in query string",
             ),
           );
         | [] =>
           raise(
-            MalformedPathString(
+            MalformedRouteString(
               "Too many optional annotations ('=?') in query string",
             ),
           )
@@ -79,22 +85,22 @@ let parse: string => t =
         BoolQuery(name, isOptional)
       | [name, _] when ! validateName(name) =>
         raise(
-          MalformedPathString("Identifier Name " ++ name ++ " not allowed"),
+          MalformedRouteString("Identifier Name " ++ name ++ " not allowed"),
         )
       | [_, type_] =>
         raise(
-          MalformedPathString("Type " ++ type_ ++ "is not yet supported"),
+          MalformedRouteString("Type " ++ type_ ++ "is not yet supported"),
         )
       | [name] when isOptional => FlagQuery(name)
       | [name] =>
         raise(
-          MalformedPathString(
+          MalformedRouteString(
             "No type annotation on '"
             ++ name
             ++ "' in query params. Either add '=?' to make it a flag, add a type annotation or do both.",
           ),
         )
-      | _ => raise(MalformedPathString("Too many type delimiters"))
+      | _ => raise(MalformedRouteString("Too many type delimiters"))
       };
     };
     let rec parseQuery: list(string) => list(query) =
@@ -129,20 +135,22 @@ let parse: string => t =
           ]
         | [name, _] when ! validateName(name) =>
           raise(
-            MalformedPathString("Identifier Name " ++ name ++ " not allowed"),
+            MalformedRouteString(
+              "Identifier Name " ++ name ++ " not allowed",
+            ),
           )
         | [name, type_] =>
           raise(
-            MalformedPathString("Type " ++ type_ ++ "is not yet supported"),
+            MalformedRouteString("Type " ++ type_ ++ "is not yet supported"),
           )
-        | _ => raise(MalformedPathString("Too many type delimiters"))
+        | _ => raise(MalformedRouteString("Too many type delimiters"))
         };
     let startsWithSlash =
       try (String.index(route, '/') == 0) {
       | Not_found => false
       };
     if (! startsWithSlash) {
-      raise(MalformedPathString("A route should always begin with a '/'"));
+      raise(MalformedRouteString("A route should always begin with a '/'"));
     } else {
       switch (Crossplat.String.splitFirst(~on=Str.regexp("\\?"), route)) {
       | [route, query] => (
@@ -164,17 +172,98 @@ let parse: string => t =
   };
 
 let evaluate = ({request: {resource}}: HttpContext.t, route: t) => {
-  let rec evalQuery = (query, queryParts: list(query)) =>
-    List.fold_left(
-      prev =>
-        fun
-        | FlagQuery(name) => prev
-        | BoolQuery(name, isOptional) => prev
-        | StringQuery(name, isOptional) => prev
-        | IntQuery(name, isOptional) => prev
-        | UIntQuery(name, isOptional) => prev
-        | FloatQuery(name, isOptional) => prev,
-      [],
+  let splitQuery = (item: string) =>
+    switch (Crossplat.String.splitFirst(Str.regexp("\\="), item)) {
+    | [key] => (key, None)
+    | [key, value] => (key, Some(value))
+    | _ =>
+      raise(
+        Failure(
+          "This should never be called. It means that splitFirst has a logic bug which has led it to have be either [] or have more than two values",
+        ),
+      )
+    };
+  let findQueryItem = (key, query) =>
+    List.find_opt(((k, _)) => key == k, query);
+  let findAndConvertQueryItem = (key, query, converter, isOptional) =>
+    switch (findQueryItem(key, query)) {
+    | Some((key, Some(value))) =>
+      try (Some(converter(value))) {
+      | e => raise(MalformedQueryParameter(key, value, e))
+      }
+    | Some((key, None)) => isOptional ? None : raise(RouteDoesNotMatch)
+    | None => isOptional ? None : raise(RouteDoesNotMatch)
+    };
+  let rec evalQuery =
+          (query: list((string, option(string))), queryParts: list(query)) =>
+    List.map(
+      fun
+      | FlagQuery(name) =>
+        switch (findQueryItem(name, query)) {
+        | Some((key, Some(value))) =>
+          try (
+            BoolQueryResult(
+              Some(value == "" ? true : bool_of_string(value)),
+            )
+          ) {
+          | e => raise(MalformedQueryParameter(name, "", e))
+          }
+        | Some((key, None)) => BoolQueryResult(Some(true))
+        | None => BoolQueryResult(Some(false))
+        }
+      | BoolQuery(name, isOptional) =>
+        BoolQueryResult(
+          findAndConvertQueryItem(name, query, bool_of_string, isOptional),
+        )
+      | StringQuery(name, isOptional) =>
+        StringQueryResult(
+          findAndConvertQueryItem(name, query, x => x, isOptional),
+        )
+      | IntQuery(name, isOptional) =>
+        IntQueryResult(
+          findAndConvertQueryItem(
+            name,
+            query,
+            item => int_of_string(item),
+            isOptional,
+          ),
+        )
+      | UIntQuery(name, isOptional) =>
+        IntQueryResult(
+          findAndConvertQueryItem(
+            name,
+            query,
+            item => {
+              let value = int_of_string(item);
+              if (value >= 0) {
+                value;
+              } else {
+                raise(
+                  MalformedQueryParameter(
+                    name,
+                    item,
+                    Failure(
+                      name
+                      ++ " is required to be a positive integer but received "
+                      ++ item
+                      ++ " instead",
+                    ),
+                  ),
+                );
+              };
+            },
+            isOptional,
+          ),
+        )
+      | FloatQuery(name, isOptional) =>
+        FloatQueryResult(
+          findAndConvertQueryItem(
+            name,
+            query,
+            item => float_of_string(item),
+            isOptional,
+          ),
+        ),
       queryParts,
     );
   let rec evalPath: (_, _) => list(resultPart) =
@@ -215,7 +304,10 @@ let evaluate = ({request: {resource}}: HttpContext.t, route: t) => {
     switch (String.split_on_char('?', resource)) {
     | [path, query] => (
         Crossplat.String.split(Str.regexp("/+"), path),
-        Crossplat.String.split(Str.regexp("&+"), query),
+        List.map(
+          splitQuery,
+          Crossplat.String.split(Str.regexp("&+"), query),
+        ),
       )
     | [path] => (Crossplat.String.split(Str.regexp("/+"), path), [])
     | _ => raise(Failure("This should never have been called"))

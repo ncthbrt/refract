@@ -16,7 +16,7 @@ open Ast_mapper;
 
 open Parsetree;
 
-exception MalformedPathStringWithLocation(exn, Location.t);
+exception MalformedRouteStringWithLocation(exn, Location.t);
 
 module Path = {
   let cons = (loc, nameOrValue) =>
@@ -344,6 +344,8 @@ let createRouteMachine = (~loc: Ast_helper.loc, parsedRoute) =>
       )
     | exception Reconstruct.Route.RouteDoesNotMatch =>
       Reconstruct.Machine.unhandled(ctx)
+    | exception Reconstruct.Route.RouteDoesNotMatch =>
+      Reconstruct.Machine.unhandled(ctx)
     };
 
 let createRouteMachineWithMethod = (~loc: Ast_helper.loc, method, parsedRoute) =>
@@ -403,8 +405,8 @@ let mapper = {
         try (
           createRouteMachine(~loc=e.pexp_loc, Reconstruct.Route.parse(str))
         ) {
-        | Reconstruct.Route.MalformedPathString(_) as e =>
-          raise(MalformedPathStringWithLocation(e, strLoc))
+        | Reconstruct.Route.MalformedRouteString(_) as e =>
+          raise(MalformedRouteStringWithLocation(e, strLoc))
         }
       | "route.get" =>
         try (
@@ -416,8 +418,8 @@ let mapper = {
             Reconstruct.Route.parse(str),
           )
         ) {
-        | Reconstruct.Route.MalformedPathString(_) as e =>
-          raise(MalformedPathStringWithLocation(e, strLoc))
+        | Reconstruct.Route.MalformedRouteString(_) as e =>
+          raise(MalformedRouteStringWithLocation(e, strLoc))
         }
       | "route.post" =>
         try (
@@ -429,8 +431,8 @@ let mapper = {
             Reconstruct.Route.parse(str),
           )
         ) {
-        | Reconstruct.Route.MalformedPathString(_) as e =>
-          raise(MalformedPathStringWithLocation(e, strLoc))
+        | Reconstruct.Route.MalformedRouteString(_) as e =>
+          raise(MalformedRouteStringWithLocation(e, strLoc))
         }
       | "route.delete" =>
         try (
@@ -442,8 +444,8 @@ let mapper = {
             Reconstruct.Route.parse(str),
           )
         ) {
-        | Reconstruct.Route.MalformedPathString(_) as e =>
-          raise(MalformedPathStringWithLocation(e, strLoc))
+        | Reconstruct.Route.MalformedRouteString(_) as e =>
+          raise(MalformedRouteStringWithLocation(e, strLoc))
         }
       | "route.patch" =>
         try (
@@ -455,8 +457,8 @@ let mapper = {
             Reconstruct.Route.parse(str),
           )
         ) {
-        | Reconstruct.Route.MalformedPathString(_) as e =>
-          raise(MalformedPathStringWithLocation(e, strLoc))
+        | Reconstruct.Route.MalformedRouteString(_) as e =>
+          raise(MalformedRouteStringWithLocation(e, strLoc))
         }
       | "route.put" =>
         try (
@@ -468,8 +470,8 @@ let mapper = {
             Reconstruct.Route.parse(str),
           )
         ) {
-        | Reconstruct.Route.MalformedPathString(_) as e =>
-          raise(MalformedPathStringWithLocation(e, strLoc))
+        | Reconstruct.Route.MalformedRouteString(_) as e =>
+          raise(MalformedRouteStringWithLocation(e, strLoc))
         }
       | _ => default_mapper.expr(mapper, e)
       }
@@ -503,8 +505,8 @@ let mapper = {
 let () = {
   Location.register_error_of_exn(
     fun
-    | MalformedPathStringWithLocation(
-        Reconstruct.Route.MalformedPathString(reason),
+    | MalformedRouteStringWithLocation(
+        Reconstruct.Route.MalformedRouteString(reason),
         loc,
       ) =>
       Some(Location.error(~loc, reason))
