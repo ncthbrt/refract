@@ -6,7 +6,7 @@ module Request = {
   include Request;
   let body = (decoder, f, ctx: HttpContext.t) =>
     Repromise.then_(body => f(body, ctx), decoder(ctx));
-  let bodyText: (string => Machine.t) => Machine.t =
+  let bodyString: (string => Machine.t) => Machine.t =
     f => body((_) => Repromise.resolve("HERROR"), f);
 };
 

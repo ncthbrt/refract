@@ -44,7 +44,7 @@ module Method = {
 };
 
 module Body = {
-  type t;
+  type t = [ | `Empty | `String(string) | `Stream((string => unit) => unit)];
 };
 
 type t = {
