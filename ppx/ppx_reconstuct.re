@@ -330,7 +330,7 @@ let createRouteApplication = (parsedRoute: Reconstruct.Route.t) => {
 };
 
 let createRouteMachine = (~loc: Ast_helper.loc, parsedRoute) =>
-  fun%expr (f, ctx) =>
+  fun%expr (f, ctx: Reconstruct.HttpContext.t) =>
     switch (
       Reconstruct.Route.evaluate(ctx, [%e createRouteAst(parsedRoute)])
     ) {
@@ -342,8 +342,6 @@ let createRouteMachine = (~loc: Ast_helper.loc, parsedRoute) =>
           "This expression should never execute. It means that there is a bug in the routing code",
         ),
       )
-    | exception Reconstruct.Route.RouteDoesNotMatch =>
-      Reconstruct.Machine.unhandled(ctx)
     | exception Reconstruct.Route.RouteDoesNotMatch =>
       Reconstruct.Machine.unhandled(ctx)
     };

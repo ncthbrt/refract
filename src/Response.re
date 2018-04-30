@@ -189,5 +189,5 @@ module Body = {
 
 type t = {
   status: StatusCode.t,
-  headers: array((string, string)),
+  headers: list((string, string)),
 };

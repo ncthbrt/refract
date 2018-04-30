@@ -60,12 +60,11 @@ let parse: string => t =
             ),
           )
         | [a, ...b] =>
-          print_endline(a);
           raise(
             MalformedRouteString(
               "Too many optional annotations ('=?') in query string",
             ),
-          );
+          )
         | [] =>
           raise(
             MalformedRouteString(

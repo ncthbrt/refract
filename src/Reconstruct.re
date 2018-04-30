@@ -7,7 +7,7 @@ module Request = {
   let body = (decoder, f, ctx: HttpContext.t) =>
     Repromise.then_(body => f(body, ctx), decoder(ctx));
   let bodyText: (string => Machine.t) => Machine.t =
-    f => body((_) => Repromise.resolve(""), f);
+    f => body((_) => Repromise.resolve("HERROR"), f);
 };
 
 module Response = {
@@ -20,14 +20,14 @@ let map = (res: Repromise.t(Machine.result), f) =>
   Repromise.then_(
     fun
     | Machine.Handled(ctx) => f(ctx)
-    | Unhandled => Repromise.resolve(Machine.Unhandled),
+    | Unhandled(err) => Repromise.resolve(Machine.Unhandled(err)),
     res,
   );
 
 let mapUnhandled = (res, f) =>
   Repromise.then_(
     fun
-    | Machine.Unhandled => f()
+    | Machine.Unhandled(e) => f(e)
     | Handled(ctx) => Repromise.resolve(Machine.Handled(ctx)),
     res,
   );
@@ -36,7 +36,7 @@ let flatMap = (res: Repromise.t(Machine.result), f: Machine.t) =>
   Repromise.then_(
     fun
     | Machine.Handled(ctx) => f(ctx)
-    | Unhandled => Repromise.resolve(Machine.Unhandled),
+    | Unhandled(e) => Repromise.resolve(Machine.Unhandled(e)),
     res,
   );
 
@@ -65,7 +65,13 @@ let switch_: list(Machine.t) => Machine.t =
     let rec aux =
       fun
       | [] => Machine.unhandled(ctx)
-      | [hd, ...tail] => mapUnhandled(hd(ctx), () => aux(tail));
+      | [hd, ...tail] =>
+        mapUnhandled(hd(ctx), x =>
+          switch (x) {
+          | None => aux(tail)
+          | Some(e) => Repromise.resolve(Machine.Unhandled(Some(e)))
+          }
+        );
     aux(lst);
   };
 
