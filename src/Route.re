@@ -165,7 +165,18 @@ let parse: string => t =
 
 let evaluate = ({request: {resource}}: HttpContext.t, route: t) => {
   let rec evalQuery = (query, queryParts: list(query)) =>
-    raise(RouteDoesNotMatch);
+    List.fold_left(
+      prev =>
+        fun
+        | FlagQuery(name) => prev
+        | BoolQuery(name, isOptional) => prev
+        | StringQuery(name, isOptional) => prev
+        | IntQuery(name, isOptional) => prev
+        | UIntQuery(name, isOptional) => prev
+        | FloatQuery(name, isOptional) => prev,
+      [],
+      queryParts,
+    );
   let rec evalPath: (_, _) => list(resultPart) =
     (path, route: list(path)) =>
       switch (path, route) {
