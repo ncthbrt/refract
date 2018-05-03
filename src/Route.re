@@ -44,35 +44,28 @@ type result = (list(resultPart), list(queryResultPart));
 let validateName =
   fun
   | "" => true
-  | name =>
-    Crossplat.String.matches(Str.regexp("^[a-z_][0-9a-zA-Z_']*$"), name);
+  | name => Crossplat.String.matches(~regex="^[a-z_][0-9a-zA-Z_']*$", name);
 
 let parse: string => t =
   route => {
     let parseQueryItem = (item: string) => {
       let (item, isOptional) =
-        switch (Crossplat.String.split(Str.regexp("\\=\\?"), item)) {
+        switch (Crossplat.String.split(~on="\\=\\?", item)) {
         | [name] => (name, String.length(name) < String.length(item))
-        | [item, rest] =>
+        | [_, rest] =>
           raise(
             MalformedRouteString(
               "Expected '&' or end of string after '=?' but got " ++ rest,
             ),
           )
-        | [a, ...b] =>
-          raise(
-            MalformedRouteString(
-              "Too many optional annotations ('=?') in query string",
-            ),
-          )
-        | [] =>
+        | _ =>
           raise(
             MalformedRouteString(
               "Too many optional annotations ('=?') in query string",
             ),
           )
         };
-      switch (String.split_on_char(':', item)) {
+      switch (Crossplat.String.splitOnChar(':', item)) {
       | [name, "string"] when validateName(name) =>
         StringQuery(name, isOptional)
       | [name, "float"] when validateName(name) =>
@@ -111,7 +104,7 @@ let parse: string => t =
       | [] => []
       | ["*", ...tail] => [Wildcard, ...parsePath(tail)]
       | [hd, ...tail] =>
-        switch (String.split_on_char(':', hd)) {
+        switch (Crossplat.String.splitOnChar(':', hd)) {
         | [constant] => [
             Constant(Crossplat.String.lowercaseAscii(constant)),
             ...parsePath(tail),
@@ -138,7 +131,7 @@ let parse: string => t =
               "Identifier Name " ++ name ++ " not allowed",
             ),
           )
-        | [name, type_] =>
+        | [_, type_] =>
           raise(
             MalformedRouteString("Type " ++ type_ ++ "is not yet supported"),
           )
@@ -151,15 +144,12 @@ let parse: string => t =
     if (! startsWithSlash) {
       raise(MalformedRouteString("A route should always begin with a '/'"));
     } else {
-      switch (Crossplat.String.splitFirst(~on=Str.regexp("\\?"), route)) {
+      switch (Crossplat.String.splitFirst(~on="\\?", route)) {
       | [route, query] => (
-          parsePath(Crossplat.String.split(~on=Str.regexp("/+"), route)),
-          parseQuery(Crossplat.String.split(~on=Str.regexp("&"), query)),
+          parsePath(Crossplat.String.split(~on="/+", route)),
+          parseQuery(Crossplat.String.split(~on="&", query)),
         )
-      | [route] => (
-          parsePath(Crossplat.String.split(~on=Str.regexp("/+"), route)),
-          [],
-        )
+      | [route] => (parsePath(Crossplat.String.split(~on="/+", route)), [])
       | _ =>
         raise(
           Failure(
@@ -172,7 +162,7 @@ let parse: string => t =
 
 let evaluate = ({request: {resource}}: HttpContext.t, route: t) => {
   let splitQuery = (item: string) =>
-    switch (Crossplat.String.splitFirst(Str.regexp("\\="), item)) {
+    switch (Crossplat.String.splitFirst(~on="\\=", item)) {
     | [key] => (key, None)
     | [key, value] => (key, Some(value))
     | _ =>
@@ -183,23 +173,25 @@ let evaluate = ({request: {resource}}: HttpContext.t, route: t) => {
       )
     };
   let findQueryItem = (key, query) =>
-    List.find_opt(((k, _)) => key == k, query);
+    try (Some(List.find(((k, _)) => key == k, query))) {
+    | Not_found => None
+    };
   let findAndConvertQueryItem = (key, query, converter, isOptional) =>
     switch (findQueryItem(key, query)) {
     | Some((key, Some(value))) =>
       try (Some(converter(value))) {
       | e => raise(MalformedQueryParameter(key, value, e))
       }
-    | Some((key, None)) => isOptional ? None : raise(RouteDoesNotMatch)
+    | Some((_, None)) => isOptional ? None : raise(RouteDoesNotMatch)
     | None => isOptional ? None : raise(RouteDoesNotMatch)
     };
-  let rec evalQuery =
-          (query: list((string, option(string))), queryParts: list(query)) =>
+  let evalQuery =
+      (query: list((string, option(string))), queryParts: list(query)) =>
     List.map(
       fun
       | FlagQuery(name) =>
         switch (findQueryItem(name, query)) {
-        | Some((key, Some(value))) =>
+        | Some((_, Some(value))) =>
           try (
             BoolQueryResult(
               Some(value == "" ? true : bool_of_string(value)),
@@ -207,7 +199,7 @@ let evaluate = ({request: {resource}}: HttpContext.t, route: t) => {
           ) {
           | e => raise(MalformedQueryParameter(name, "", e))
           }
-        | Some((key, None)) => BoolQueryResult(Some(true))
+        | Some((_, None)) => BoolQueryResult(Some(true))
         | None => BoolQueryResult(Some(false))
         }
       | BoolQuery(name, isOptional) =>
@@ -300,15 +292,12 @@ let evaluate = ({request: {resource}}: HttpContext.t, route: t) => {
         }
       };
   let (path, query) =
-    switch (String.split_on_char('?', resource)) {
+    switch (Crossplat.String.splitOnChar('?', resource)) {
     | [path, query] => (
-        Crossplat.String.split(Str.regexp("/+"), path),
-        List.map(
-          splitQuery,
-          Crossplat.String.split(Str.regexp("&+"), query),
-        ),
+        Crossplat.String.split(~on="/+", path),
+        List.map(splitQuery, Crossplat.String.split(~on="&+", query)),
       )
-    | [path] => (Crossplat.String.split(Str.regexp("/+"), path), [])
+    | [path] => (Crossplat.String.split(~on="/+", path), [])
     | _ => raise(Failure("This should never have been called"))
     };
   (evalPath(path, fst(route)), evalQuery(query, snd(route)));

@@ -1,8 +1,15 @@
 {
   "name": "Reconstruct",
-  "sources": "src",
-  "ocamlfind-dependencies": [
+  "sources": [
+    "src",
+    "node"
+  ],
+  "bs-dependencies": [
     "repromise"
   ],
-  "refmt": 3
+  "refmt": 3,
+  "package-specs": {
+    "module": "commonjs",
+    "in-source": true
+  }
 }

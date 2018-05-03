@@ -1,0 +1,43 @@
+{
+  "name": "reconstruct",
+  "version": "0.1.0",
+  "description": "Reason workflow with Esy",
+  "license": "MIT",
+  "esy": {
+    "build": [
+      [
+        "refmterr",
+        "jbuilder",
+        "build"
+      ]
+    ],
+    "install": [
+      "esy-installer",
+      "reconstruct.install",
+      "ppx_reconstruct.install"
+    ],
+    "buildsInSource": "_build"
+  },
+  "resolutions": {
+    "**/@opam/lwt": "3.3.0"
+  },
+  "scripts": {
+    "clean": "rm -rf _build/ lib/"
+  },
+  "dependencies": {
+    "@esy-ocaml/esy-installer": "^0.0.0",
+    "@esy-ocaml/reason": "^3.0.0",
+    "@opam/alcotest": "^0.8.3",
+    "@opam/jbuilder": "^1.0.0-beta20",
+    "@opam/ppxlib": "^0.2.0",
+    "refmterr": "^3.0.4",
+    "repromise": "github:aantron/repromise"
+  },
+  "peerDependencies": {
+    "ocaml": "~4.6.0"
+  },
+  "devDependencies": {
+    "@esy-ocaml/merlin": "*",
+    "ocaml": "~4.6.0"
+  }
+}

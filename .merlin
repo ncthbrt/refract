@@ -1,8 +1,13 @@
 ####{BSB GENERATED: NO EDIT
-FLG -ppx /Users/ncthbrt/git/bs-webmachine-experiment/node_modules/bs-platform/lib/bsppx.exe
-FLG -no-alias-deps -color always
+FLG -ppx /Users/ncthbrt/git/reconstruct/node_modules/bs-platform/lib/bsppx.exe
+S /Users/ncthbrt/git/reconstruct/node_modules/bs-platform/lib/ocaml
+B /Users/ncthbrt/git/reconstruct/node_modules/bs-platform/lib/ocaml
+FLG -nostdlib -no-alias-deps -color always
 FLG -w -30-40+6+7+27+32..39+44+45+101
-B /Users/ncthbrt/git/bs-webmachine-experiment/node_modules/bs-platform/lib
+S /Users/ncthbrt/git/reconstruct/node_modules/repromise/lib/ocaml
+B /Users/ncthbrt/git/reconstruct/node_modules/repromise/lib/ocaml
+S node
+B lib/bs/node
 S src
-B lib/bs/bytecode/src
+B lib/bs/src
 ####BSB GENERATED: NO EDIT}

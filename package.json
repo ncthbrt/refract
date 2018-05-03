@@ -1,43 +1,40 @@
 {
-  "name": "reconstruct",
+  "name": "@ncthbrt/reconstruct",
   "version": "0.1.0",
-  "description": "Reason workflow with Esy",
-  "license": "MIT",
-  "esy": {
-    "build": [
-      [
-        "refmterr",
-        "jbuilder",
-        "build"
-      ]
-    ],
-    "install": [
-      "esy-installer",
-      "reconstruct.install",
-      "ppx_reconstruct.install"
-    ],
-    "buildsInSource": "_build"
-  },
-  "resolutions": {
-    "**/@opam/lwt": "3.3.0"
+  "description": "let reason-nact = (node.js, reason, actors) ⇒ your µ services have never been so typed",
+  "repository": "https://github.com/ncthbrt/reason-nact",
+  "author": "Nick Cuthbert (https://github.com/ncthbrt)",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "http://github.com/ncthbrt/reason-nact/issues"
   },
   "scripts": {
-    "clean": "rm -rf _build/ lib/"
+    "build": "bsb -make-world",
+    "start": "bsb -make-world -w",
+    "clean": "bsb -clean-world",
+    "coverage": "nyc report --temp-directory=coverage --reporter=text-lcov | coveralls",
+    "pretest": "yarn run build",
+    "prepush": "yarn run build && yarn run local-test",
+    "prepare": "yarn run clean && yarn run build"
+  },
+  "keywords": [
+    "BuckleScript",
+    "Reason",
+    "nact",
+    "actors",
+    "actor-model",
+    "akka",
+    "akka.net",
+    "non-blocking",
+    "actor system",
+    "erlang",
+    "event sourcing",
+    "distributed-systems"
+  ],
+  "devDependencies": {
+    "bs-platform": "^3.0.0"
   },
   "dependencies": {
-    "@esy-ocaml/esy-installer": "^0.0.0",
-    "@esy-ocaml/reason": "^3.0.0",
-    "@opam/alcotest": "^0.8.3",
-    "@opam/jbuilder": "^1.0.0-beta20",
-    "@opam/ppxlib": "^0.2.0",
-    "refmterr": "^3.0.4",
     "repromise": "github:aantron/repromise"
-  },
-  "peerDependencies": {
-    "ocaml": "~4.6.0"
-  },
-  "devDependencies": {
-    "@esy-ocaml/merlin": "*",
-    "ocaml": "~4.6.0"
   }
 }

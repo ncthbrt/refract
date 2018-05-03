@@ -45,6 +45,9 @@ let bind = flatMap;
 let compose: (Machine.t, Machine.t) => Machine.t =
   (a, b, ctx) => flatMap(a(ctx), b);
 
+let method: (Request.Method.t => Machine.t) => Machine.t =
+  (f, ctx) => f(ctx.request.method, ctx);
+
 let isMethod: Request.Method.t => Machine.t =
   (method, ctx) =>
     ctx.request.method == method ?
