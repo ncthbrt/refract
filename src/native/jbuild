@@ -1,0 +1,6 @@
+(jbuild_version 1)
+
+(library
+ ((name reconstruct_platform_native)  
+  (flags (-w -40 -w +26))  
+(libraries (str))))

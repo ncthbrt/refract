@@ -1,8 +1,8 @@
 {
   "name": "Reconstruct",
   "sources": [
-    "src",
-    "node"
+    "src/node",
+    "src/common"
   ],
   "bs-dependencies": [
     "repromise"

@@ -6,8 +6,8 @@ FLG -nostdlib -no-alias-deps -color always
 FLG -w -30-40+6+7+27+32..39+44+45+101
 S /Users/ncthbrt/git/reconstruct/node_modules/repromise/lib/ocaml
 B /Users/ncthbrt/git/reconstruct/node_modules/repromise/lib/ocaml
-S node
-B lib/bs/node
-S src
-B lib/bs/src
+S src/common
+B lib/bs/src/common
+S src/node
+B lib/bs/src/node
 ####BSB GENERATED: NO EDIT}

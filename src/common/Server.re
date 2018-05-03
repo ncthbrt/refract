@@ -1,7 +1,7 @@
 type t;
 
 let start: (~port: int=?, Machine.t) => t =
-  (~port: int=3000, _) => Obj.magic();
+  (~port=3000, _) => Obj.magic(port);
 /* open Lwt;
 
    open Cohttp;
