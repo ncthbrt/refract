@@ -1,6 +1,8 @@
 (jbuild_version 1)
+(copy_files# common/*.{re,rei})
 
 (library
- ((name reconstruct_platform_native)  
+ ((name reconstruct)  
   (flags (-w -40 -w +26))  
-(libraries (str))))
+  (public_name reconstruct)
+(libraries (repromise str))))

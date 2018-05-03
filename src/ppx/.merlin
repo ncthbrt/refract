@@ -1,5 +1,5 @@
-B ../_build/default/ppx/.reconstruct_ppx.objs
-B ../_build/default/src/.reconstruct.objs
+B ../../_build/default/src/native/.reconstruct.objs
+B ../../_build/default/src/ppx/.reconstruct_ppx.objs
 B /Users/ncthbrt/.esy/3_________________________________________________________________/i/opam__slash__base-100000000.11.0-8297edb9/lib/base
 B /Users/ncthbrt/.esy/3_________________________________________________________________/i/opam__slash__base-100000000.11.0-8297edb9/lib/base/caml
 B /Users/ncthbrt/.esy/3_________________________________________________________________/i/opam__slash__base-100000000.11.0-8297edb9/lib/base/shadow_stdlib
@@ -24,7 +24,7 @@ B /Users/ncthbrt/.esy/3_________________________________________________________
 FLG -open Reconstruct_ppx -w -40 -w +26 -w +A-4
 FLG -ppx '/Users/ncthbrt/git/reconstruct/_build/default/.ppx/ppxlib.metaquot/ppx.exe --as-ppx --cookie '\''library-name="reconstruct_ppx"'\'''
 S .
-S ../src
+S ../native
 S /Users/ncthbrt/.esy/3_________________________________________________________________/i/opam__slash__base-100000000.11.0-8297edb9/lib/base
 S /Users/ncthbrt/.esy/3_________________________________________________________________/i/opam__slash__base-100000000.11.0-8297edb9/lib/base/caml
 S /Users/ncthbrt/.esy/3_________________________________________________________________/i/opam__slash__base-100000000.11.0-8297edb9/lib/base/shadow_stdlib
