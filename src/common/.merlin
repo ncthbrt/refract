@@ -1,3 +1,0 @@
-B ../../_build/default/src/common/.reconstruct.objs
-FLG -open Reconstruct__ -w -40 -w +26
-S .

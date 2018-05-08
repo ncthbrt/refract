@@ -17,20 +17,7 @@
     "prepush": "yarn run build && yarn run local-test",
     "prepare": "yarn run clean && yarn run build"
   },
-  "keywords": [
-    "BuckleScript",
-    "Reason",
-    "nact",
-    "actors",
-    "actor-model",
-    "akka",
-    "akka.net",
-    "non-blocking",
-    "actor system",
-    "erlang",
-    "event sourcing",
-    "distributed-systems"
-  ],
+  "keywords": [],
   "devDependencies": {
     "bs-platform": "^3.0.0"
   },
