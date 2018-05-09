@@ -13,6 +13,6 @@ script:
 notifications:
   email:
     recipients:
-      - antonbachin@yahoo.com
+      - github@ncthbrt.com
     on_success: always
 on_failure: always

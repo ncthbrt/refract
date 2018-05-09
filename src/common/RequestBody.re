@@ -1,0 +1,1 @@
+type t = [ | `Empty | `String(string) | `Stream((string => unit) => unit)];
