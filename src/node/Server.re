@@ -1,6 +1,10 @@
 type t;
 
-[@bs.module "http2"] external createServer : unit => t = "";
+type req;
+
+type res;
+
+[@bs.module "http2"] external createServer : ((req, res) => unit) => t = "";
 
 [@bs.module "http2"]
 external createSecureServer :
@@ -15,7 +19,11 @@ external createSecureServer :
 [@bs.send] external listen : (t, int) => unit = "";
 
 let start = (~port=3000, machine) => {
-  let server = createServer();
+  let server =
+    createServer((req, res) => {
+      let context: HttpContext.t = {request: req, response: res};
+      ();
+    });
   listen(server, port);
   server;
 };
