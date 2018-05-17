@@ -7,6 +7,17 @@ module Request = {
     Repromise.then_(body => f(body, ctx), decoder(ctx));
   let bodyString: (string => Machine.t) => Machine.t =
     f => body((_) => Repromise.resolve("HERROR"), f);
+  let method: (Method.t => Machine.t) => Machine.t =
+    (f, ctx) => f(Request.method_(ctx.request), ctx);
+  let isMethod: Method.t => Machine.t =
+    (method, ctx) =>
+      Request.method_(ctx.request) == method ?
+        Machine.handled(ctx) : Machine.unhandled(ctx);
+  let get = isMethod(Method.Get);
+  let post = isMethod(Method.Post);
+  let put = isMethod(Method.Put);
+  let patch = isMethod(Method.Patch);
+  let delete = isMethod(Method.Delete);
 };
 
 module Response = {};
@@ -41,24 +52,6 @@ let bind = flatMap;
 
 let compose: (Machine.t, Machine.t) => Machine.t =
   (a, b, ctx) => flatMap(a(ctx), b);
-
-let method: (Request.Method.t => Machine.t) => Machine.t =
-  (f, ctx) => f(ctx.request.method, ctx);
-
-let isMethod: Request.Method.t => Machine.t =
-  (method, ctx) =>
-    ctx.request.method == method ?
-      Machine.handled(ctx) : Machine.unhandled(ctx);
-
-let get = isMethod(Request.Method.Get);
-
-let post = isMethod(Request.Method.Post);
-
-let put = isMethod(Request.Method.Put);
-
-let patch = isMethod(Request.Method.Patch);
-
-let delete = isMethod(Request.Method.Delete);
 
 let switch_: list(Machine.t) => Machine.t =
   (lst, ctx: HttpContext.t) => {
