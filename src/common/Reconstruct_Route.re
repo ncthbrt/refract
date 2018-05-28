@@ -24,7 +24,8 @@ type path('ty, 'v) =
   | Int(string, path('ty, 'v)): path(int => 'ty, 'v)
   | UInt(string, path('ty, 'v)): path(int => 'ty, 'v)
   | Float(string, path('ty, 'v)): path(float => 'ty, 'v)
-  | Wildcard(path('ty, 'v)): path(float => 'ty, 'v);
+  | Wildcard(path('ty, 'v)): path(float => 'ty, 'v)
+  | Custom(string, string => 'a, path('ty, 'v)): path('a => 'ty, 'v);
 
 type query('ty, 'v) =
   | End: query('v, 'v)
