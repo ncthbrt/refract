@@ -52,38 +52,7 @@ type query('ty, 'v) =
                                                   )
   | FloatQuery(string, query('ty, 'v)): query(float => 'ty, 'v);
 /*
- type path =
-   | Constant(string)
-   | String(string)
-   | Int(string)
-   | UInt(string)
-   | Float(string)
-   | Wildcard;
 
- type isOptional = bool;
-
- type query =
-   | FlagQuery(string)
-   | BoolQuery(string, isOptional)
-   | StringQuery(string, isOptional)
-   | IntQuery(string, isOptional)
-   | UIntQuery(string, isOptional)
-   | FloatQuery(string, isOptional);
-
- type t = (list(path), list(query));
-
- type resultPart =
-   | StringResult(string)
-   | IntResult(int)
-   | FloatResult(float);
-
- type queryResultPart =
-   | StringQueryResult(option(string))
-   | IntQueryResult(option(int))
-   | FloatQueryResult(option(float))
-   | BoolQueryResult(option(bool));
-
- type result = (list(resultPart), list(queryResultPart));
  let parse: string => t =
    route => {
      let parseQueryItem = (item: string) => {
