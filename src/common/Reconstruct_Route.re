@@ -51,7 +51,15 @@ type query('ty, 'v) =
                                                     option(float) => 'ty,
                                                     'v,
                                                   )
-  | FloatQuery(string, query('ty, 'v)): query(float => 'ty, 'v);
+  | FloatQuery(string, query('ty, 'v)): query(float => 'ty, 'v)
+  | OptionalCustomQuery(string, string => option('a), query('ty, 'v)): query(
+                                                                    option(
+                                                                    'a,
+                                                                    ) =>
+                                                                    'ty,
+                                                                    'v,
+                                                                    )
+  | CustomQuery(string, string => 'a, query('ty, 'v)): query('a => 'ty, 'v);
 /*
 
  let parse: string => t =
