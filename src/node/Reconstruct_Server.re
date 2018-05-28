@@ -24,7 +24,6 @@ type t = NodeServer.t;
 
 let handler = machine =>
   (. req, res) => {
-    Js.log("received a request");
     let context: Reconstruct_HttpContext.t = {
       request: req,
       response: Reconstruct_Response.empty,
@@ -40,13 +39,15 @@ let handler = machine =>
               Reconstruct_Node.Response.end_(res);
             },
           )
-        | Unhandled(Some(err)) =>
-          Repromise.resolve(
-            {
-              Reconstruct_Node.Response.statusCode(res, 500);
-              Reconstruct_Node.Response.end_(res);
-            },
-          )
+        | Unhandled(Some(err)) => {
+            Js.Console.error2("Internal Server Error", err);
+            Repromise.resolve(
+              {
+                Reconstruct_Node.Response.statusCode(res, 500);
+                Reconstruct_Node.Response.end_(res);
+              },
+            );
+          }
         | Handled(ctx) =>
           Repromise.resolve(
             {

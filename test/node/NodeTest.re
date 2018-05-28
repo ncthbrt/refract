@@ -2,6 +2,7 @@ open Reconstruct;
 
 open Reconstruct.Operators;
 
-let machine = Request.get >>> Response.status(StatusCode.ImATeapot);
-
-Server.start(~port=9001, machine);
+Server.start(
+  ~port=9001,
+  Request.get >>> Response.status(StatusCode.ImATeapot),
+);

@@ -8,12 +8,11 @@ module HttpContext = Reconstruct_HttpContext;
 
 module Machine = Reconstruct_Machine;
 
+module Route = Reconstruct_Route;
+
 module Request = {
   let body = (decoder, f, ctx: HttpContext.t) =>
     Repromise.then_(body => f(body, ctx), decoder(ctx));
-  /*
-   let bodyString: (string => Machine.t) => Machine.t =
-     f => body((_) => Repromise.resolve("HERROR"), f); */
   let method: (Method.t => Machine.t) => Machine.t =
     (f, ctx) => f(Reconstruct_Request.method_(ctx.request), ctx);
   let isMethod: Method.t => Machine.t =
@@ -48,8 +47,6 @@ module Response = {
         response: Reconstruct_Response.status(ctx.response, status),
       });
 };
-
-module Route = Reconstruct_Route;
 
 let map = (res: Repromise.t(Machine.result), f) =>
   Repromise.then_(
