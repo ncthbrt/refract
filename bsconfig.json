@@ -4,7 +4,7 @@
     "src/node",
     "src/common",
     {
-      "dir": "test/node",
+      "dir": "samples/node",
       "type": "dev"
     }
   ],
