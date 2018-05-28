@@ -1,17 +1,24 @@
-module HttpContext = HttpContext;
+module StatusCode = Reconstruct_StatusCode;
 
-module Machine = Machine;
+module Json = Reconstruct_Json;
+
+module Method = Reconstruct_Method;
+
+module HttpContext = Reconstruct_HttpContext;
+
+module Machine = Reconstruct_Machine;
 
 module Request = {
   let body = (decoder, f, ctx: HttpContext.t) =>
     Repromise.then_(body => f(body, ctx), decoder(ctx));
-  let bodyString: (string => Machine.t) => Machine.t =
-    f => body((_) => Repromise.resolve("HERROR"), f);
+  /*
+   let bodyString: (string => Machine.t) => Machine.t =
+     f => body((_) => Repromise.resolve("HERROR"), f); */
   let method: (Method.t => Machine.t) => Machine.t =
-    (f, ctx) => f(Request.method_(ctx.request), ctx);
+    (f, ctx) => f(Reconstruct_Request.method_(ctx.request), ctx);
   let isMethod: Method.t => Machine.t =
     (method, ctx) =>
-      Request.method_(ctx.request) == method ?
+      Reconstruct_Request.method_(ctx.request) == method ?
         Machine.handled(ctx) : Machine.unhandled(ctx);
   let get = isMethod(Method.Get);
   let post = isMethod(Method.Post);
@@ -20,9 +27,29 @@ module Request = {
   let delete = isMethod(Method.Delete);
 };
 
-module Response = {};
+module Response = {
+  let ok: Machine.t =
+    ctx =>
+      Machine.handled({
+        ...ctx,
+        response: Reconstruct_Response.status(ctx.response, StatusCode.Ok),
+      });
+  let notFound: Machine.t =
+    ctx =>
+      Machine.handled({
+        ...ctx,
+        response:
+          Reconstruct_Response.status(ctx.response, StatusCode.NotFound),
+      });
+  let status: StatusCode.t => Machine.t =
+    (status, ctx) =>
+      Machine.handled({
+        ...ctx,
+        response: Reconstruct_Response.status(ctx.response, status),
+      });
+};
 
-module Route = Route;
+module Route = Reconstruct_Route;
 
 let map = (res: Repromise.t(Machine.result), f) =>
   Repromise.then_(
@@ -82,7 +109,9 @@ let zip:
 let convolute = zip;
 
 module Operators = {
-  let (=|>) = flatMap;
-  let (=>>) = compose;
-  let (^@) = (ma, mb) => zip(ma, mb);
+  let (|>|) = flatMap;
+  let (>>>) = compose;
+  let (^@) = zip;
 };
+
+module Server = Reconstruct_Server;

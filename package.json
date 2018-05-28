@@ -19,7 +19,7 @@
   },
   "keywords": [],
   "devDependencies": {
-    "bs-platform": "^3.0.0"
+    "bs-platform": "^3.1.4"
   },
   "dependencies": {
     "repromise": "github:aantron/repromise"

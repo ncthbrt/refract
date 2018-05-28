@@ -2,7 +2,11 @@
   "name": "Reconstruct",
   "sources": [
     "src/node",
-    "src/common"
+    "src/common",
+    {
+      "dir": "test/node",
+      "type": "dev"
+    }
   ],
   "bs-dependencies": [
     "repromise"
