@@ -2,8 +2,6 @@ exception RouteDoesNotMatch;
 
 exception MalformedRouteString(string);
 
-exception MalformedPathString(string);
-
 exception MalformedQueryString(string);
 
 exception MalformedQueryParameter(string, string, exn);
@@ -17,56 +15,95 @@ let validateName =
       name,
     );
 
+type pathPart('a) =
+  | ConstantPart(string)
+  | StringPart(string)
+  | IntPart(string)
+  | UIntPart(string)
+  | FloatPart(string)
+  | CustomPart(string, string => 'a)
+  | WildcardPart;
+
 type path('ty, 'v) =
   | End: path('v, 'v)
   | Constant(string, path('ty, 'v)): path('ty, 'v)
   | String(string, path('ty, 'v)): path(string => 'ty, 'v)
   | Int(string, path('ty, 'v)): path(int => 'ty, 'v)
-  | UInt(string, path('ty, 'v)): path(int => 'ty, 'v)
   | Float(string, path('ty, 'v)): path(float => 'ty, 'v)
-  | Wildcard(path('ty, 'v)): path(float => 'ty, 'v)
+  | Wildcard(path('ty, 'v)): path('ty, 'v)
   | Custom(string, string => 'a, path('ty, 'v)): path('a => 'ty, 'v);
 
 type query('ty, 'v) =
   | End: query('v, 'v)
   | FlagQuery(string, query('ty, 'v)): query(bool => 'ty, 'v)
+  | BoolQuery(string, query('ty, 'v)): query(bool => 'ty, 'v)
   | OptionalBoolQuery(string, query('ty, 'v)): query(
                                                    option(bool) => 'ty,
                                                    'v,
                                                  )
-  | BoolQuery(string, query('ty, 'v)): query(bool => 'ty, 'v)
+  | StringQuery(string, query('ty, 'v)): query(string => 'ty, 'v)
   | OptionalStringQuery(string, query('ty, 'v)): query(
                                                      option(string) => 'ty,
                                                      'v,
                                                    )
-  | StringQuery(string, query('ty, 'v)): query(string => 'ty, 'v)
-  | OptionalIntQuery(string, query('ty, 'v)): query(option(int) => 'ty, 'v)
   | IntQuery(string, query('ty, 'v)): query(int => 'ty, 'v)
-  | OptionalUIntQuery(string, query('ty, 'v)): query(
-                                                   option(int) => 'ty,
-                                                   'v,
-                                                 )
-  | UIntQuery(string, query('ty, 'v)): query(int => 'ty, 'v)
+  | OptionalIntQuery(string, query('ty, 'v)): query(option(int) => 'ty, 'v)
+  | FloatQuery(string, query('ty, 'v)): query(float => 'ty, 'v)
   | OptionalFloatQuery(string, query('ty, 'v)): query(
                                                     option(float) => 'ty,
                                                     'v,
                                                   )
-  | FloatQuery(string, query('ty, 'v)): query(float => 'ty, 'v)
-  | OptionalCustomQuery(string, string => option('a), query('ty, 'v)): query(
-                                                                    option(
-                                                                    'a,
-                                                                    ) =>
-                                                                    'ty,
-                                                                    'v,
-                                                                    )
-  | CustomQuery(string, string => 'a, query('ty, 'v)): query('a => 'ty, 'v);
+  | CustomQuery(string, string => 'a, query('ty, 'v)): query('a => 'ty, 'v)
+  | OptionalCustomQuery(string, string => 'a, query('ty, 'v)): query(
+                                                                   option(
+                                                                    float,
+                                                                   ) =>
+                                                                   'ty,
+                                                                   'v,
+                                                                 );
 /*
+
+
+
+ exception MalformedPathString(string);
+
+
+
+
+
+ type path =
+   | Constant(string)
+   | String(string)
+   | Int(string)
+   | UInt(string)
+   | Float(string)
+   | Wildcard;
+
+ type isOptional = bool;
+
+
+
+ type t = (list(path), list(query));
+
+ type resultPart =
+   | StringResult(string)
+   | IntResult(int)
+   | FloatResult(float);
+
+ type queryResultPart =
+   | StringQueryResult(option(string))
+   | IntQueryResult(option(int))
+   | FloatQueryResult(option(float))
+   | BoolQueryResult(option(bool));
+
+ type result = (list(resultPart), list(queryResultPart));
+
 
  let parse: string => t =
    route => {
      let parseQueryItem = (item: string) => {
        let (item, isOptional) =
-         switch (CrossplatString.split(~on="\\=\\?", item)) {
+         switch (Reconstruct_CrossplatString.split(~on="\\=\\?", item)) {
          | [name] => (name, String.length(name) < String.length(item))
          | [_, rest] =>
            raise(
@@ -81,7 +118,7 @@ type query('ty, 'v) =
              ),
            )
          };
-       switch (CrossplatString.splitOnChar(':', item)) {
+       switch (Reconstruct_CrossplatString.splitOnChar(':', item)) {
        | [name, "string"] when validateName(name) =>
          StringQuery(name, isOptional)
        | [name, "float"] when validateName(name) =>
@@ -120,9 +157,9 @@ type query('ty, 'v) =
        | [] => []
        | ["*", ...tail] => [Wildcard, ...parsePath(tail)]
        | [hd, ...tail] =>
-         switch (CrossplatString.splitOnChar(':', hd)) {
+         switch (Reconstruct_CrossplatString.splitOnChar(':', hd)) {
          | [constant] => [
-             Constant(CrossplatString.lowercaseAscii(constant)),
+             Constant(Reconstruct_CrossplatString.lowercaseAscii(constant)),
              ...parsePath(tail),
            ]
          | [name, "int"] when validateName(name) => [
@@ -160,12 +197,15 @@ type query('ty, 'v) =
      if (! startsWithSlash) {
        raise(MalformedRouteString("A route should always begin with a '/'"));
      } else {
-       switch (CrossplatString.splitFirst(~on="\\?", route)) {
+       switch (Reconstruct_CrossplatString.splitFirst(~on="\\?", route)) {
        | [route, query] => (
-           parsePath(CrossplatString.split(~on="/+", route)),
-           parseQuery(CrossplatString.split(~on="&", query)),
+           parsePath(Reconstruct_CrossplatString.split(~on="/+", route)),
+           parseQuery(Reconstruct_CrossplatString.split(~on="&", query)),
          )
-       | [route] => (parsePath(CrossplatString.split(~on="/+", route)), [])
+       | [route] => (
+           parsePath(Reconstruct_CrossplatString.split(~on="/+", route)),
+           [],
+         )
        | _ =>
          raise(
            Failure(
@@ -176,9 +216,9 @@ type query('ty, 'v) =
      };
    };
 
- let evaluate = ({request: {resource}}: HttpContext.t, route: t) => {
+ let evaluate = ({request: {resource}}: Reconstruct_HttpContext.t, route: t) => {
    let splitQuery = (item: string) =>
-     switch (CrossplatString.splitFirst(~on="\\=", item)) {
+     switch (Reconstruct_CrossplatString.splitFirst(~on="\\=", item)) {
      | [key] => (key, None)
      | [key, value] => (key, Some(value))
      | _ =>
@@ -216,7 +256,6 @@ type query('ty, 'v) =
            | e => raise(MalformedQueryParameter(name, "", e))
            }
          | Some((_, None)) => BoolQueryResult(Some(true))
-         | None => BoolQueryResult(Some(false))
          }
        | BoolQuery(name, isOptional) =>
          BoolQueryResult(
@@ -308,12 +347,15 @@ type query('ty, 'v) =
          }
        };
    let (path, query) =
-     switch (CrossplatString.splitOnChar('?', resource)) {
+     switch (Reconstruct_CrossplatString.splitOnChar('?', resource)) {
      | [path, query] => (
-         CrossplatString.split(~on="/+", path),
-         List.map(splitQuery, CrossplatString.split(~on="&+", query)),
+         Reconstruct_CrossplatString.split(~on="/+", path),
+         List.map(
+           splitQuery,
+           Reconstruct_CrossplatString.split(~on="&+", query),
+         ),
        )
-     | [path] => (CrossplatString.split(~on="/+", path), [])
+     | [path] => (Reconstruct_CrossplatString.split(~on="/+", path), [])
      | _ => raise(Failure("This should never have been called"))
      };
    (evalPath(path, fst(route)), evalQuery(query, snd(route)));
