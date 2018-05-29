@@ -25,16 +25,15 @@ type pathPart('a) =
   | WildcardPart;
 
 type path('ty, 'v) =
-  | End: path(unit => 'v, 'v)
+  | End: path('v, 'v)
   | Constant(string, path('ty, 'v)): path('ty, 'v)
   | String(string, path('ty, 'v)): path(string => 'ty, 'v)
   | Int(string, path('ty, 'v)): path(int => 'ty, 'v)
   | Float(string, path('ty, 'v)): path(float => 'ty, 'v)
   | Wildcard(path('ty, 'v)): path('ty, 'v);
 
-/* | Custom(string, string => 'a, path('ty, 'v)): path('a => 'ty, 'v); */
 type query('ty, 'v) =
-  | End: query('v, 'v)
+  | EndQuery: query('v, 'v)
   | FlagQuery(string, query('ty, 'v)): query(bool => 'ty, 'v)
   | BoolQuery(string, query('ty, 'v)): query(bool => 'ty, 'v)
   | OptionalBoolQuery(string, query('ty, 'v)): query(
@@ -62,10 +61,13 @@ type query('ty, 'v) =
                                                                    'v,
                                                                  );
 
-let rec evalPath: type ty t. (list(string), path(ty, t)) => t =
-  (parts, route) =>
+let rec evalPath:
+  type ty.
+    (path(ty, Reconstruct_Machine.t), list(string), ty) =>
+    Reconstruct_Machine.t =
+  (route, parts, f) =>
     switch (route, parts) {
-    | (End, []) => (f => f())
+    | (End, []) => f
     | (_, []) => raise(RouteDoesNotMatch)
     | (End, _) => raise(RouteDoesNotMatch)
     | (Constant(value, tl), [str, ...next]) when value == str =>
@@ -74,21 +76,35 @@ let rec evalPath: type ty t. (list(string), path(ty, t)) => t =
     | (String(_, tl), [str, ...next]) => evalPath(tl, next, f(str))
     | (Int(_, tl), [str, ...next]) =>
       let value =
-        try (int_of_string(hd)) {
+        try (int_of_string(str)) {
         | Failure(_) => raise(RouteDoesNotMatch)
         };
       evalPath(tl, next, f(value));
     | (Float(_, tl), [str, ...next]) =>
       let value =
-        try (float_of_string(hd)) {
+        try (float_of_string(str)) {
         | Failure(_) => raise(RouteDoesNotMatch)
         };
       evalPath(tl, next, f(value));
-    | (Wildcard(tl), [str, ...next]) =>
-      try (evalPath(tl, next)) {
+    | (Wildcard(tl), [_, ...next]) =>
+      try (evalPath(tl, next, f)) {
       | RouteDoesNotMatch => evalPath(Wildcard(tl), next, f)
       }
     };
+
+let a = Constant("hello", String("world", Int("age", End)));
+
+let result =
+  evalPath(
+    a,
+    ["hello", "world", "12"],
+    (str, int) => {
+      Js.log(str ++ string_of_int(int));
+      Reconstruct_Machine.handled;
+    },
+  );
+
+Js.log(result);
 /*
 
 
