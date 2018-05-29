@@ -25,14 +25,14 @@ type pathPart('a) =
   | WildcardPart;
 
 type path('ty, 'v) =
-  | End: path('v, 'v)
+  | End: path(unit => 'v, 'v)
   | Constant(string, path('ty, 'v)): path('ty, 'v)
   | String(string, path('ty, 'v)): path(string => 'ty, 'v)
   | Int(string, path('ty, 'v)): path(int => 'ty, 'v)
   | Float(string, path('ty, 'v)): path(float => 'ty, 'v)
-  | Wildcard(path('ty, 'v)): path('ty, 'v)
-  | Custom(string, string => 'a, path('ty, 'v)): path('a => 'ty, 'v);
+  | Wildcard(path('ty, 'v)): path('ty, 'v);
 
+/* | Custom(string, string => 'a, path('ty, 'v)): path('a => 'ty, 'v); */
 type query('ty, 'v) =
   | End: query('v, 'v)
   | FlagQuery(string, query('ty, 'v)): query(bool => 'ty, 'v)
@@ -62,38 +62,31 @@ type query('ty, 'v) =
                                                                    'v,
                                                                  );
 
-let rec evalPath: type t tv. (list(string), path(t, tv), tv => 'a) => unit =
-  (parts, route, f) =>
+let rec evalPath: type ty t. (list(string), path(ty, t)) => t =
+  (parts, route) =>
     switch (route, parts) {
-    | (End, []) => []
+    | (End, []) => (f => f())
     | (_, []) => raise(RouteDoesNotMatch)
     | (End, _) => raise(RouteDoesNotMatch)
-    | (Constant(str, tl), [hd, ...next]) when str == hd =>
-      evalPath(tl, next)
-    | (_, [Constant(_), ..._]) => raise(RouteDoesNotMatch)
-    | ([hd, ...tl], [String(_), ...next]) => [
-        StringResult(hd),
-        ...evalPath(tl, next),
-      ]
-    | ([hd, ...tl], [Int(_), ...next]) =>
-      try ([IntResult(int_of_string(hd)), ...evalPath(tl, next)]) {
-      | Failure(_) => raise(RouteDoesNotMatch)
-      }
-    | ([hd, ...tl], [UInt(_), ...next]) =>
+    | (Constant(value, tl), [str, ...next]) when value == str =>
+      evalPath(tl, next, f)
+    | (Constant(_), _) => raise(RouteDoesNotMatch)
+    | (String(_, tl), [str, ...next]) => evalPath(tl, next, f(str))
+    | (Int(_, tl), [str, ...next]) =>
       let value =
         try (int_of_string(hd)) {
         | Failure(_) => raise(RouteDoesNotMatch)
         };
-      value >= 0 ?
-        [IntResult(value), ...evalPath(tl, next)] :
-        raise(RouteDoesNotMatch);
-    | ([hd, ...tl], [Float(_), ...next]) =>
-      try ([FloatResult(float_of_string(hd)), ...evalPath(tl, next)]) {
-      | Failure(_) => raise(RouteDoesNotMatch)
-      }
-    | ([_, ...tl], [Wildcard, ...next]) =>
+      evalPath(tl, next, f(value));
+    | (Float(_, tl), [str, ...next]) =>
+      let value =
+        try (float_of_string(hd)) {
+        | Failure(_) => raise(RouteDoesNotMatch)
+        };
+      evalPath(tl, next, f(value));
+    | (Wildcard(tl), [str, ...next]) =>
       try (evalPath(tl, next)) {
-      | RouteDoesNotMatch => evalPath(tl, [Wildcard, ...next])
+      | RouteDoesNotMatch => evalPath(Wildcard(tl), next, f)
       }
     };
 /*
