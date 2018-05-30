@@ -98,3 +98,50 @@ let rec evalPath:
         };
       evalPath(tl, next, f(value));
     };
+
+module Tuples = {
+  type path('ty) =
+    | End: path(unit)
+    | Constant(string, path('ty)): path('ty)
+    | String(string, path('ty)): path((string, 'ty))
+    | Int(string, path('ty)): path((int, 'ty))
+    | Float(string, path('ty)): path((float, 'ty))
+    | Wildcard(path('ty)): path('ty)
+    | Custom(string, string => 'a, path('ty)): path(('a, 'ty));
+  /* This approach is using tuples instead of functions */
+  let rec evalPath: type t. (path(t), list(string)) => t =
+    (route, parts) =>
+      switch (route, parts) {
+      | (End, []) => ()
+      | (_, []) => raise(RouteDoesNotMatch)
+      | (End, _) => raise(RouteDoesNotMatch)
+      | (Constant(value, tl), [str, ...next]) when value == str =>
+        evalPath(tl, next)
+      | (Constant(_), _) => raise(RouteDoesNotMatch)
+      | (String(_, tl), [str, ...next]) => (str, evalPath(tl, next))
+      | (Int(_, tl), [str, ...next]) =>
+        let value =
+          try (int_of_string(str)) {
+          | Failure(_) => raise(RouteDoesNotMatch)
+          };
+        (value, evalPath(tl, next));
+      | (Float(_, tl), [str, ...next]) =>
+        let value =
+          try (float_of_string(str)) {
+          | Failure(_) => raise(RouteDoesNotMatch)
+          };
+        (value, evalPath(tl, next));
+      | (Wildcard(tl), [_, ...next]) =>
+        try (evalPath(tl, next)) {
+        | RouteDoesNotMatch => evalPath(Wildcard(tl), next)
+        }
+      | (Custom(_, parser, tl), [str, ...next]) =>
+        let value =
+          try (parser(str)) {
+          | _ => raise(RouteDoesNotMatch)
+          };
+        (value, evalPath(tl, next));
+      };
+  let a = Constant("hello", String("world", Int("age", End)));
+  let b = evalPath(a, ["hello", "nick", "24"]);
+};
