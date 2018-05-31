@@ -13,9 +13,11 @@ type t('func, 'result) =
 
 let split: Refract_HttpContext.t => list(string) =
   ctx =>
-    Refract_CrossplatString.splitOnChar(
-      '/',
-      Refract_Request.url(ctx.request),
+    List.tl(
+      Refract_CrossplatString.splitOnChar(
+        '/',
+        Refract_Request.url(ctx.request),
+      ),
     );
 
 let rec evalPath:
@@ -23,6 +25,7 @@ let rec evalPath:
   (f, route, parts) =>
     switch (route, parts) {
     | (End, []) => f
+    | (End, [""]) => f
     | (_, []) => raise(RouteDoesNotMatch)
     | (End, _) => raise(RouteDoesNotMatch)
     | (Constant(value, tl), [str, ...next]) when value == str =>
