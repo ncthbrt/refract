@@ -16,6 +16,10 @@ open Ast_mapper;
 
 open Parsetree;
 
+exception MalformedRouteString(string);
+
+exception MalformedQueryString(string);
+
 exception MalformedRouteStringWithLocation(exn, Location.t);
 
 let validateName =

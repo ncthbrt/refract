@@ -8,7 +8,9 @@ module HttpContext = Refract_HttpContext;
 
 module Machine = Refract_Machine;
 
-module Route = Refract_Route;
+module Path = Refract_Path;
+
+module Query = Refract_Query;
 
 module Request = {
   let body = (decoder, f, ctx: HttpContext.t) =>
