@@ -2,67 +2,66 @@ exception RouteDoesNotMatch;
 
 exception MalformedQueryParameter(string, string, exn);
 
-type t('tuple, 'func, 'result) =
-  | End: t(unit, 'func, 'result)
-  | Constant(string, t('tuple, 'func, 'result)): t('tuple, 'func, 'result)
-  | String(string, t('tuple, 'func, 'result)): t(
-                                                   (string, 'tuple),
-                                                   string => 'func,
-                                                   'result,
-                                                 )
-  | Int(string, t('tuple, 'func, 'result)): t(
-                                                (int, 'tuple),
-                                                int => 'func,
-                                                'result,
-                                              )
-  | Float(string, t('tuple, 'func, 'result)): t(
-                                                  (float, 'tuple),
-                                                  float => 'func,
-                                                  'result,
-                                                )
-  | Wildcard(t('tuple, 'func, 'result)): t('tuple, 'func, 'result)
-  | Custom(string, string => 'a, t('tuple, 'func, 'result)): t(
-                                                                 ('a, 'tuple),
-                                                                 'a => 'func,
-                                                                 'result,
-                                                               );
+type t('func, 'result) =
+  | End: t('result, 'result)
+  | Constant(string, t('func, 'result)): t('func, 'result)
+  | String(string, t('func, 'result)): t(string => 'func, 'result)
+  | Int(string, t('func, 'result)): t(int => 'func, 'result)
+  | Float(string, t('func, 'result)): t(float => 'func, 'result)
+  | Wildcard(t('func, 'result)): t('func, 'result)
+  | Custom(string, string => 'a, t('func, 'result)): t('a => 'func, 'result);
+
+let split: Refract_HttpContext.t => list(string) =
+  ctx =>
+    Refract_CrossplatString.splitOnChar(
+      '/',
+      Refract_Request.url(ctx.request),
+    );
 
 let rec evalPath:
-  type func result tuple. (t(tuple, result, func), list(string)) => tuple =
-  (route, parts) =>
+  type func result. (func, t(func, result), list(string)) => result =
+  (f, route, parts) =>
     switch (route, parts) {
-    | (End, []) => ()
+    | (End, []) => f
     | (_, []) => raise(RouteDoesNotMatch)
     | (End, _) => raise(RouteDoesNotMatch)
     | (Constant(value, tl), [str, ...next]) when value == str =>
-      evalPath(tl, next)
+      evalPath(f, tl, next)
     | (Constant(_), _) => raise(RouteDoesNotMatch)
-    | (String(_, tl), [str, ...next]) => (str, evalPath(tl, next))
+    | (String(_, tl), [str, ...next]) => evalPath(f(str), tl, next)
     | (Int(_, tl), [str, ...next]) =>
       let value =
         try (int_of_string(str)) {
         | Failure(_) => raise(RouteDoesNotMatch)
         };
-      (value, evalPath(tl, next));
+      evalPath(f(value), tl, next);
     | (Float(_, tl), [str, ...next]) =>
       let value =
         try (float_of_string(str)) {
         | Failure(_) => raise(RouteDoesNotMatch)
         };
-      (value, evalPath(tl, next));
+      evalPath(f(value), tl, next);
     | (Wildcard(tl), [_, ...next]) =>
-      try (evalPath(tl, next)) {
-      | RouteDoesNotMatch => evalPath(Wildcard(tl), next)
+      try (evalPath(f, tl, next)) {
+      | RouteDoesNotMatch => evalPath(f, Wildcard(tl), next)
       }
     | (Custom(_, parser, tl), [str, ...next]) =>
       let value =
         try (parser(str)) {
         | _ => raise(RouteDoesNotMatch)
         };
-      (value, evalPath(tl, next));
+      evalPath(f(value), tl, next);
     };
 
 let matches:
-  type tuple func.
-    (t(tuple, Refract_Machine.t, func), func) => Refract_Machine.t =
-  (path, f) => Refract_Machine.handled;
+  type func. (t(func, Refract_Machine.t), func) => Refract_Machine.t =
+  (path, f, ctx) => {
+    let pathParts = split(ctx);
+    (
+      try (evalPath(f, path, pathParts)) {
+      | RouteDoesNotMatch => Refract_Machine.unhandled
+      }
+    )(
+      ctx,
+    );
+  };
