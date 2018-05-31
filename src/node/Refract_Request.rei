@@ -1,6 +1,6 @@
 type t;
 
-let method_: t => Reconstruct_Method.t;
+let method_: t => Refract_Method.t;
 
 let headers: t => list((string, string));
 

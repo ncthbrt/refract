@@ -6,15 +6,6 @@ exception MalformedQueryString(string);
 
 exception MalformedQueryParameter(string, string, exn);
 
-let validateName =
-  fun
-  | "" => true
-  | name =>
-    Reconstruct_CrossplatString.matches(
-      ~regex="^[a-z_][0-9a-zA-Z_']*$",
-      name,
-    );
-
 type query('ty, 'v) =
   | EndQuery: query('v, 'v)
   | FlagQuery(string, query('ty, 'v)): query(bool => 'ty, 'v)
@@ -53,7 +44,6 @@ type path('ty) =
   | Wildcard(path('ty)): path('ty)
   | Custom(string, string => 'a, path('ty)): path(('a, 'ty));
 
-/* This approach is using tuples instead of functions */
 let rec evalPath: type t. (path(t), list(string)) => t =
   (route, parts) =>
     switch (route, parts) {
@@ -87,7 +77,3 @@ let rec evalPath: type t. (path(t), list(string)) => t =
         };
       (value, evalPath(tl, next));
     };
-
-let a = Constant("hello", String("world", Int("age", End)));
-
-let b = evalPath(a, ["hello", "nick", "24"]);

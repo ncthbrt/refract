@@ -18,7 +18,7 @@ type t =
   | Patch;
 
 let fromString = str =>
-  switch (Reconstruct_CrossplatString.uppercaseAscii(str)) {
+  switch (Refract_CrossplatString.uppercaseAscii(str)) {
   | "GET" => Some(Get)
   | "HEAD" => Some(Head)
   | "POST" => Some(Post)

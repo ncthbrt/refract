@@ -1,7 +1,7 @@
 {
-  "name": "reconstruct",
+  "name": "refract",
   "version": "0.1.0",
-  "description": "Reason workflow with Esy",
+  "description": "Node & Native Web Framework For Ocaml/Reason",
   "license": "MIT",
   "esy": {
     "build": [

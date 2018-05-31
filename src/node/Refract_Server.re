@@ -2,7 +2,7 @@ module NodeServer = {
   type t;
   [@bs.module "http"]
   external createServer :
-    ((. Reconstruct_Request.t, Reconstruct_Node.Response.t) => unit) => t =
+    ((. Refract_Request.t, Refract_Node.Response.t) => unit) => t =
     "createServer";
   [@bs.module "https"]
   external createSecureServer :
@@ -12,7 +12,7 @@ module NodeServer = {
         "key": string,
         "cert": string,
       },
-      (. Reconstruct_Request.t, Reconstruct_Node.Response.t) => unit
+      (. Refract_Request.t, Refract_Node.Response.t) => unit
     ) =>
     t =
     "createServer";
@@ -24,38 +24,38 @@ type t = NodeServer.t;
 
 let handler = machine =>
   (. req, res) => {
-    let context: Reconstruct_HttpContext.t = {
+    let context: Refract_HttpContext.t = {
       request: req,
-      response: Reconstruct_Response.empty,
+      response: Refract_Response.empty,
     };
     let result = machine(context);
     ignore(
       Repromise.then_(
         fun
-        | Reconstruct_Machine.Unhandled(None) =>
+        | Refract_Machine.Unhandled(None) =>
           Repromise.resolve(
             {
-              Reconstruct_Node.Response.statusCode(res, 404);
-              Reconstruct_Node.Response.end_(res);
+              Refract_Node.Response.statusCode(res, 404);
+              Refract_Node.Response.end_(res);
             },
           )
         | Unhandled(Some(err)) => {
             Js.Console.error2("Internal Server Error", err);
             Repromise.resolve(
               {
-                Reconstruct_Node.Response.statusCode(res, 500);
-                Reconstruct_Node.Response.end_(res);
+                Refract_Node.Response.statusCode(res, 500);
+                Refract_Node.Response.end_(res);
               },
             );
           }
         | Handled(ctx) =>
           Repromise.resolve(
             {
-              Reconstruct_Node.Response.statusCode(
+              Refract_Node.Response.statusCode(
                 res,
-                Reconstruct_StatusCode.toInt(ctx.response.status),
+                Refract_StatusCode.toInt(ctx.response.status),
               );
-              Reconstruct_Node.Response.end_(res);
+              Refract_Node.Response.end_(res);
             },
           ),
         result,

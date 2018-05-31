@@ -18,6 +18,12 @@ open Parsetree;
 
 exception MalformedRouteStringWithLocation(exn, Location.t);
 
+let validateName =
+  fun
+  | "" => true
+  | name =>
+    Refract_CrossplatString.matches(~regex="^[a-z_][0-9a-zA-Z_']*$", name);
+
 module Path = {
   let cons = (loc, nameOrValue) =>
     Ast_helper.Exp.construct(
@@ -25,30 +31,28 @@ module Path = {
       Some(Ast_helper.Exp.constant(Ast_helper.Const.string(nameOrValue))),
     );
   let floatP = name => {
-    let loc = Location.mknoloc(Longident.parse("Reconstruct.Route.Float"));
+    let loc = Location.mknoloc(Longident.parse("Refract.Route.Float"));
     cons(loc, name);
   };
   let string = name => {
-    let loc = Location.mknoloc(Longident.parse("Reconstruct.Route.String"));
+    let loc = Location.mknoloc(Longident.parse("Refract.Route.String"));
     cons(loc, name);
   };
   let int = name => {
-    let loc = Location.mknoloc(Longident.parse("Reconstruct.Route.Int"));
+    let loc = Location.mknoloc(Longident.parse("Refract.Route.Int"));
     cons(loc, name);
   };
   let uint = name => {
-    let loc = Location.mknoloc(Longident.parse("Reconstruct.Route.UInt"));
+    let loc = Location.mknoloc(Longident.parse("Refract.Route.UInt"));
     cons(loc, name);
   };
   let constant = value => {
-    let loc =
-      Location.mknoloc(Longident.parse("Reconstruct.Route.Constant"));
+    let loc = Location.mknoloc(Longident.parse("Refract.Route.Constant"));
     cons(loc, value);
   };
   let wildcard = () => {
     open Ast_helper;
-    let loc =
-      Location.mknoloc(Longident.parse("Reconstruct.Route.Wildcard"));
+    let loc = Location.mknoloc(Longident.parse("Refract.Route.Wildcard"));
     Exp.construct(loc, None);
   };
 };
@@ -73,38 +77,32 @@ module Query = {
       )
     );
   let floatP = (name, isOptional: bool) => {
-    let loc =
-      Location.mknoloc(Longident.parse("Reconstruct.Route.FloatQuery"));
+    let loc = Location.mknoloc(Longident.parse("Refract.Route.FloatQuery"));
     cons(loc, name, isOptional);
   };
   let string = (name, isOptional) => {
-    let loc =
-      Location.mknoloc(Longident.parse("Reconstruct.Route.StringQuery"));
+    let loc = Location.mknoloc(Longident.parse("Refract.Route.StringQuery"));
     cons(loc, name, isOptional);
   };
   let int = (name, isOptional) => {
-    let loc =
-      Location.mknoloc(Longident.parse("Reconstruct.Route.IntQuery"));
+    let loc = Location.mknoloc(Longident.parse("Refract.Route.IntQuery"));
     cons(loc, name, isOptional);
   };
   let uint = (name, isOptional) => {
-    let loc =
-      Location.mknoloc(Longident.parse("Reconstruct.Route.UIntQuery"));
+    let loc = Location.mknoloc(Longident.parse("Refract.Route.UIntQuery"));
     cons(loc, name, isOptional);
   };
   let bool = (name, isOptional) => {
-    let loc =
-      Location.mknoloc(Longident.parse("Reconstruct.Route.BoolQuery"));
+    let loc = Location.mknoloc(Longident.parse("Refract.Route.BoolQuery"));
     cons(loc, name, isOptional);
   };
   let flag = name => {
     open Ast_helper;
-    let loc =
-      Location.mknoloc(Longident.parse("Reconstruct.Route.FlagQuery"));
+    let loc = Location.mknoloc(Longident.parse("Refract.Route.FlagQuery"));
     Exp.construct(loc, Some(Exp.constant(Ast_helper.Const.string(name))));
   };
   let toExp =
-    Reconstruct.Route.(
+    Refract.Route.(
       fun
       | FlagQuery(name) => flag(name)
       | BoolQuery(name, isOptional) => bool(name, isOptional)
@@ -120,20 +118,18 @@ module PathResult = {
     name => {Asttypes.txt: name, loc: Ast_helper.default_loc^};
   let floatP = name => {
     open Ast_helper;
-    let loc =
-      Location.mknoloc(Longident.parse("Reconstruct.Route.FloatResult"));
+    let loc = Location.mknoloc(Longident.parse("Refract.Route.FloatResult"));
     Pat.construct(loc, Some(Ast_helper.Pat.var(toName(name))));
   };
   let string = name => {
     open Ast_helper;
     let loc =
-      Location.mknoloc(Longident.parse("Reconstruct.Route.StringResult"));
+      Location.mknoloc(Longident.parse("Refract.Route.StringResult"));
     Pat.construct(loc, Some(Ast_helper.Pat.var(toName(name))));
   };
   let int = name => {
     open Ast_helper;
-    let loc =
-      Location.mknoloc(Longident.parse("Reconstruct.Route.IntResult"));
+    let loc = Location.mknoloc(Longident.parse("Refract.Route.IntResult"));
     Pat.construct(loc, Some(Ast_helper.Pat.var(toName(name))));
   };
 };
@@ -155,41 +151,37 @@ module QueryResult = {
     );
   let floatP = (name, isOptional) => {
     let loc =
-      Location.mknoloc(
-        Longident.parse("Reconstruct.Route.FloatQueryResult"),
-      );
+      Location.mknoloc(Longident.parse("Refract.Route.FloatQueryResult"));
     cons(loc, name, isOptional);
   };
   let string = (name, isOptional) => {
     let loc =
-      Location.mknoloc(
-        Longident.parse("Reconstruct.Route.StringQueryResult"),
-      );
+      Location.mknoloc(Longident.parse("Refract.Route.StringQueryResult"));
     cons(loc, name, isOptional);
   };
   let int = (name, isOptional) => {
     let loc =
-      Location.mknoloc(Longident.parse("Reconstruct.Route.IntQueryResult"));
+      Location.mknoloc(Longident.parse("Refract.Route.IntQueryResult"));
     cons(loc, name, isOptional);
   };
   let bool = (name, isOptional) => {
     let loc =
-      Location.mknoloc(Longident.parse("Reconstruct.Route.BoolQueryResult"));
+      Location.mknoloc(Longident.parse("Refract.Route.BoolQueryResult"));
     cons(loc, name, isOptional);
   };
   let flag = bool(_, false);
 };
 
-let createRouteAst = (parsedRoute: Reconstruct.Route.t) => {
+let createRouteAst = (parsedRoute: Refract.Route.t) => {
   open Ast_helper;
   let listConstructorLocation = Location.mknoloc(Longident.parse("[]"));
   let consLocation = Location.mknoloc(Longident.parse("::"));
   let emptyListConstructor = Exp.construct(listConstructorLocation, None);
   let (<+>) = (newValue, prev) =>
     Exp.construct(consLocation, Some(Exp.tuple([newValue, prev])));
-  let rec path = (parts: list(Reconstruct.Route.path)) =>
+  let rec path = (parts: list(Refract.Route.path)) =>
     Path.(
-      Reconstruct.Route.(
+      Refract.Route.(
         switch (parts) {
         | [] => emptyListConstructor
         | [Constant(value), ...tail] => constant(value) <+> path(tail)
@@ -201,7 +193,7 @@ let createRouteAst = (parsedRoute: Reconstruct.Route.t) => {
         }
       )
     );
-  let rec query = (parts: list(Reconstruct.Route.query)) =>
+  let rec query = (parts: list(Refract.Route.query)) =>
     Query.(
       switch (parts) {
       | [] => emptyListConstructor
@@ -211,7 +203,7 @@ let createRouteAst = (parsedRoute: Reconstruct.Route.t) => {
   Ast_helper.Exp.tuple([path(fst(parsedRoute)), query(snd(parsedRoute))]);
 };
 
-let createRoutePattern = (parsedRoute: Reconstruct.Route.t) => {
+let createRoutePattern = (parsedRoute: Refract.Route.t) => {
   open Ast_helper;
   let listConstructorLocation = Location.mknoloc(Longident.parse("[]"));
   let consLocation = Location.mknoloc(Longident.parse("::"));
@@ -220,9 +212,9 @@ let createRoutePattern = (parsedRoute: Reconstruct.Route.t) => {
     Pat.construct(consLocation, Some(Pat.tuple([newValue, prev])));
   let pName = count => "p" ++ string_of_int(count);
   let qName = count => "q" ++ string_of_int(count);
-  let rec path = (parts: list(Reconstruct.Route.path), count) =>
+  let rec path = (parts: list(Refract.Route.path), count) =>
     PathResult.(
-      Reconstruct.Route.(
+      Refract.Route.(
         switch (parts) {
         | [] => emptyListConstructor
         | [String(_), ...tail] =>
@@ -235,9 +227,9 @@ let createRoutePattern = (parsedRoute: Reconstruct.Route.t) => {
         }
       )
     );
-  let rec query = (parts: list(Reconstruct.Route.query), count) =>
+  let rec query = (parts: list(Refract.Route.query), count) =>
     QueryResult.(
-      Reconstruct.Route.(
+      Refract.Route.(
         switch (parts) {
         | [FlagQuery(_), ...tail] =>
           flag(qName(count)) <+> query(tail, count + 1)
@@ -258,7 +250,7 @@ let createRoutePattern = (parsedRoute: Reconstruct.Route.t) => {
   Pat.tuple([path(fst(parsedRoute), 0), query(snd(parsedRoute), 0)]);
 };
 
-let createRouteApplication = (parsedRoute: Reconstruct.Route.t) => {
+let createRouteApplication = (parsedRoute: Refract.Route.t) => {
   open Ast_helper;
   let f = Exp.ident(Location.mknoloc(Longident.parse("f")));
   let pName = count =>
@@ -277,49 +269,46 @@ let createRouteApplication = (parsedRoute: Reconstruct.Route.t) => {
     fun
     | "" => Asttypes.Nolabel
     | name => isOptional ? Asttypes.Optional(name) : Asttypes.Labelled(name);
-  let foldPath = ((prev: list(_), i: int), item: Reconstruct.Route.path) =>
+  let foldPath = ((prev: list(_), i: int), item: Refract.Route.path) =>
     switch (item) {
-    | Reconstruct.Route.String(name) => (
-        [(lbl(name), pName(i)), ...prev],
-        i,
-      )
-    | Reconstruct.Route.Int(name) => (
+    | Refract.Route.String(name) => ([(lbl(name), pName(i)), ...prev], i)
+    | Refract.Route.Int(name) => (
         [(lbl(name), pName(i)), ...prev],
         i + 1,
       )
-    | Reconstruct.Route.UInt(name) => (
+    | Refract.Route.UInt(name) => (
         [(lbl(name), pName(i)), ...prev],
         i + 1,
       )
-    | Reconstruct.Route.Float(name) => (
+    | Refract.Route.Float(name) => (
         [(lbl(name), pName(i)), ...prev],
         i + 1,
       )
     | _ => (prev, i)
     };
-  let foldQuery = ((prev: list(_), i: int), item: Reconstruct.Route.query) =>
+  let foldQuery = ((prev: list(_), i: int), item: Refract.Route.query) =>
     switch (item) {
-    | Reconstruct.Route.StringQuery(name, isOptional) => (
+    | Refract.Route.StringQuery(name, isOptional) => (
         [(lblOpt(isOptional, name), qName(i)), ...prev],
         i,
       )
-    | Reconstruct.Route.IntQuery(name, isOptional) => (
+    | Refract.Route.IntQuery(name, isOptional) => (
         [(lblOpt(isOptional, name), qName(i)), ...prev],
         i + 1,
       )
-    | Reconstruct.Route.UIntQuery(name, isOptional) => (
+    | Refract.Route.UIntQuery(name, isOptional) => (
         [(lblOpt(isOptional, name), qName(i)), ...prev],
         i + 1,
       )
-    | Reconstruct.Route.FloatQuery(name, isOptional) => (
+    | Refract.Route.FloatQuery(name, isOptional) => (
         [(lblOpt(isOptional, name), qName(i)), ...prev],
         i + 1,
       )
-    | Reconstruct.Route.BoolQuery(name, isOptional) => (
+    | Refract.Route.BoolQuery(name, isOptional) => (
         [(lblOpt(isOptional, name), qName(i)), ...prev],
         i + 1,
       )
-    | Reconstruct.Route.FlagQuery(name) => (
+    | Refract.Route.FlagQuery(name) => (
         [(lbl(name), qName(i)), ...prev],
         i + 1,
       )
@@ -330,10 +319,8 @@ let createRouteApplication = (parsedRoute: Reconstruct.Route.t) => {
 };
 
 let createRouteMachine = (~loc: Ast_helper.loc, parsedRoute) =>
-  fun%expr (f, ctx: Reconstruct.HttpContext.t) =>
-    switch (
-      Reconstruct.Route.evaluate(ctx, [%e createRouteAst(parsedRoute)])
-    ) {
+  fun%expr (f, ctx: Refract.HttpContext.t) =>
+    switch (Refract.Route.evaluate(ctx, [%e createRouteAst(parsedRoute)])) {
     | [%p createRoutePattern(parsedRoute)] =>
       [%e createRouteApplication(parsedRoute)](ctx)
     | _ =>
@@ -342,17 +329,15 @@ let createRouteMachine = (~loc: Ast_helper.loc, parsedRoute) =>
           "This expression should never execute. It means that there is a bug in the routing code",
         ),
       )
-    | exception Reconstruct.Route.RouteDoesNotMatch =>
-      Reconstruct.Machine.unhandled(ctx)
+    | exception Refract.Route.RouteDoesNotMatch =>
+      Refract.Machine.unhandled(ctx)
     };
 
 let createRouteMachineWithMethod = (~loc: Ast_helper.loc, method, parsedRoute) =>
-  fun%expr (f, ctx: Reconstruct.HttpContext.t) =>
-    switch (
-      Reconstruct.Route.evaluate(ctx, [%e createRouteAst(parsedRoute)])
-    ) {
+  fun%expr (f, ctx: Refract.HttpContext.t) =>
+    switch (Refract.Route.evaluate(ctx, [%e createRouteAst(parsedRoute)])) {
     | [%p createRoutePattern(parsedRoute)] =>
-      Reconstruct.compose(
+      Refract.compose(
         [%e method],
         [%e createRouteApplication(parsedRoute)],
         ctx,
@@ -363,8 +348,8 @@ let createRouteMachineWithMethod = (~loc: Ast_helper.loc, method, parsedRoute) =
           "This expression should never execute. It means that there is a bug in the routing code",
         ),
       )
-    | exception Reconstruct.Route.RouteDoesNotMatch =>
-      Reconstruct.Machine.unhandled(ctx)
+    | exception Refract.Route.RouteDoesNotMatch =>
+      Refract.Machine.unhandled(ctx)
     };
 
 let createBoundMachine = (mapper: Ast_mapper.mapper, pat, pvbExp, exp, loc) => {
@@ -400,10 +385,8 @@ let mapper = {
       )) =>
       switch (extensionName) {
       | "route" =>
-        try (
-          createRouteMachine(~loc=e.pexp_loc, Reconstruct.Route.parse(str))
-        ) {
-        | Reconstruct.Route.MalformedRouteString(_) as e =>
+        try (createRouteMachine(~loc=e.pexp_loc, Refract.Route.parse(str))) {
+        | Refract.Route.MalformedRouteString(_) as e =>
           raise(MalformedRouteStringWithLocation(e, strLoc))
         }
       | "route.get" =>
@@ -411,12 +394,12 @@ let mapper = {
           createRouteMachineWithMethod(
             ~loc=e.pexp_loc,
             Ast_helper.Exp.ident(
-              Location.mknoloc(Longident.parse("Reconstruct.get")),
+              Location.mknoloc(Longident.parse("Refract.get")),
             ),
-            Reconstruct.Route.parse(str),
+            Refract.Route.parse(str),
           )
         ) {
-        | Reconstruct.Route.MalformedRouteString(_) as e =>
+        | Refract.Route.MalformedRouteString(_) as e =>
           raise(MalformedRouteStringWithLocation(e, strLoc))
         }
       | "route.post" =>
@@ -424,12 +407,12 @@ let mapper = {
           createRouteMachineWithMethod(
             ~loc=e.pexp_loc,
             Ast_helper.Exp.ident(
-              Location.mknoloc(Longident.parse("Reconstruct.post")),
+              Location.mknoloc(Longident.parse("Refract.post")),
             ),
-            Reconstruct.Route.parse(str),
+            Refract.Route.parse(str),
           )
         ) {
-        | Reconstruct.Route.MalformedRouteString(_) as e =>
+        | Refract.Route.MalformedRouteString(_) as e =>
           raise(MalformedRouteStringWithLocation(e, strLoc))
         }
       | "route.delete" =>
@@ -437,12 +420,12 @@ let mapper = {
           createRouteMachineWithMethod(
             ~loc=e.pexp_loc,
             Ast_helper.Exp.ident(
-              Location.mknoloc(Longident.parse("Reconstruct.delete")),
+              Location.mknoloc(Longident.parse("Refract.delete")),
             ),
-            Reconstruct.Route.parse(str),
+            Refract.Route.parse(str),
           )
         ) {
-        | Reconstruct.Route.MalformedRouteString(_) as e =>
+        | Refract.Route.MalformedRouteString(_) as e =>
           raise(MalformedRouteStringWithLocation(e, strLoc))
         }
       | "route.patch" =>
@@ -450,12 +433,12 @@ let mapper = {
           createRouteMachineWithMethod(
             ~loc=e.pexp_loc,
             Ast_helper.Exp.ident(
-              Location.mknoloc(Longident.parse("Reconstruct.patch")),
+              Location.mknoloc(Longident.parse("Refract.patch")),
             ),
-            Reconstruct.Route.parse(str),
+            Refract.Route.parse(str),
           )
         ) {
-        | Reconstruct.Route.MalformedRouteString(_) as e =>
+        | Refract.Route.MalformedRouteString(_) as e =>
           raise(MalformedRouteStringWithLocation(e, strLoc))
         }
       | "route.put" =>
@@ -463,12 +446,12 @@ let mapper = {
           createRouteMachineWithMethod(
             ~loc=e.pexp_loc,
             Ast_helper.Exp.ident(
-              Location.mknoloc(Longident.parse("Reconstruct.put")),
+              Location.mknoloc(Longident.parse("Refract")),
             ),
-            Reconstruct.Route.parse(str),
+            Refractte.parse(str),
           )
         ) {
-        | Reconstruct.Route.MalformedRouteString(_) as e =>
+        | Refract.Route.MalformedRouteString(_) as e =>
           raise(MalformedRouteStringWithLocation(e, strLoc))
         }
       | _ => default_mapper.expr(mapper, e)
@@ -504,7 +487,7 @@ let () = {
   Location.register_error_of_exn(
     fun
     | MalformedRouteStringWithLocation(
-        Reconstruct.Route.MalformedRouteString(reason),
+        Refract.Route.MalformedRouteString(reason),
         loc,
       ) =>
       Some(Location.error(~loc, reason))
@@ -512,7 +495,7 @@ let () = {
   );
   Migrate_parsetree.(
     Driver.register(
-      ~name="ppx_reconstruct", Versions.ocaml_406, (_config, _cookies) =>
+      ~name="ppx_Refract", Versions.ocaml_406, (_config, _cookies) =>
       mapper
     )
   );
