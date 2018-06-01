@@ -30,7 +30,7 @@ Server.start(
        }),
      )
   |. compose(
-       Path.onMatch(
+       Path.matches(
          Path.(Constant("hello", String(End))),
          (name, ctx) => {
            Js.log(name);

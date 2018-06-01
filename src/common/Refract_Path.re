@@ -63,7 +63,7 @@ let rec evalPath:
       evalPath(f(value), tl, next);
     };
 
-let onMatch:
+let matches:
   type func. (t(func, Refract_Machine.t), func) => Refract_Machine.t =
   (path, f, ctx) => {
     let pathParts = split(ctx);
