@@ -5,10 +5,10 @@ open Refract.Operators;
 Server.start(
   ~port=9003,
   Request.get
-  /* >>> Refract.Request.url(url => {
-       Js.log(url);
-       Refract.Machine.handled;
-     }) */
+  >>> Refract.Request.url(url => {
+        Js.log(url);
+        Refract.Machine.handled;
+      })
   >>> Path.matches(
         Path.(Constant("hello", String(End))),
         (name, ctx) => {
