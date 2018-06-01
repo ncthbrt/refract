@@ -82,6 +82,14 @@ let then_ = flatMap;
 let compose: (Machine.t, Machine.t) => Machine.t =
   (a, b, ctx) => flatMap(a(ctx), b);
 
+let rec composeMany: list(Machine.t) => Machine.t =
+  (machines, ctx) =>
+    switch (machines) {
+    | [] => Machine.unhandled(ctx)
+    | [machine] => machine(ctx)
+    | [machine, ...machines] => compose(machine, composeMany(machines), ctx)
+    };
+
 let switch_: list(Machine.t) => Machine.t =
   (lst, ctx: HttpContext.t) => {
     let rec aux =
