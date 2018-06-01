@@ -2,30 +2,32 @@ open Refract;
 
 open Refract.Operators;
 
+/* Server.start(
+     ~port=9003,
+     Request.get
+     >>> Refract.Request.url(url => {
+           Js.log(url);
+           Refract.Machine.handled;
+         })
+     >>> Path.matches(
+           Path.(Constant("hello", String(End))),
+           name => {
+             Js.log(name);
+             Refract.Machine.handled;
+           },
+         )
+     >>> Response.status(StatusCode.ImATeapot),
+   ); */
 Server.start(
   ~port=9003,
   Request.get
-  >>> Refract.Request.url(url => {
-        Js.log(url);
-        Refract.Machine.handled;
-      })
-  >>> Path.matches(
-        Path.(Constant("hello", String(End))),
-        name => {
-          Js.log(name);
-          Refract.Machine.handled;
-        },
-      )
-  >>> Response.status(StatusCode.ImATeapot),
-);
-/* Server.start(
-     ~port=9003,
-     composeMany([
-       Request.get,
+  |. compose(
        Refract.Request.url(url => {
          Js.log(url);
          Refract.Machine.handled;
        }),
+     )
+  |. compose(
        Path.matches(
          Path.(Constant("hello", String(End))),
          (name, ctx) => {
@@ -33,6 +35,6 @@ Server.start(
            Refract.Machine.handled(ctx);
          },
        ),
-       Response.status(StatusCode.ImATeapot),
-     ]),
-   ); */
+     )
+  |. compose(Response.status(StatusCode.ImATeapot)),
+);
