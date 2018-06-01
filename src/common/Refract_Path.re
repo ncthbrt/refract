@@ -5,11 +5,11 @@ exception MalformedQueryParameter(string, string, exn);
 type t('func, 'result) =
   | End: t('result, 'result)
   | Constant(string, t('func, 'result)): t('func, 'result)
-  | String(string, t('func, 'result)): t(string => 'func, 'result)
-  | Int(string, t('func, 'result)): t(int => 'func, 'result)
-  | Float(string, t('func, 'result)): t(float => 'func, 'result)
+  | String(t('func, 'result)): t(string => 'func, 'result)
+  | Int(t('func, 'result)): t(int => 'func, 'result)
+  | Float(t('func, 'result)): t(float => 'func, 'result)
   | Wildcard(t('func, 'result)): t('func, 'result)
-  | Custom(string, string => 'a, t('func, 'result)): t('a => 'func, 'result);
+  | Custom(string => 'a, t('func, 'result)): t('a => 'func, 'result);
 
 let split: Refract_HttpContext.t => list(string) =
   ctx =>
@@ -17,10 +17,13 @@ let split: Refract_HttpContext.t => list(string) =
       fun
       | "" => false
       | _ => true,
-      List.tl(
-        Refract_CrossplatString.splitOnChar(
-          '/',
-          Refract_Request.url(ctx.request),
+      Refract_CrossplatString.splitOnChar(
+        '/',
+        List.hd(
+          Refract_CrossplatString.splitOnChar(
+            '?',
+            Refract_Request.url(ctx.request),
+          ),
         ),
       ),
     );
@@ -35,14 +38,14 @@ let rec evalPath:
     | (Constant(value, tl), [str, ...next]) when value == str =>
       evalPath(f, tl, next)
     | (Constant(_), _) => raise(RouteDoesNotMatch)
-    | (String(_, tl), [str, ...next]) => evalPath(f(str), tl, next)
-    | (Int(_, tl), [str, ...next]) =>
+    | (String(tl), [str, ...next]) => evalPath(f(str), tl, next)
+    | (Int(tl), [str, ...next]) =>
       let value =
         try (int_of_string(str)) {
         | Failure(_) => raise(RouteDoesNotMatch)
         };
       evalPath(f(value), tl, next);
-    | (Float(_, tl), [str, ...next]) =>
+    | (Float(tl), [str, ...next]) =>
       let value =
         try (float_of_string(str)) {
         | Failure(_) => raise(RouteDoesNotMatch)
@@ -52,7 +55,7 @@ let rec evalPath:
       try (evalPath(f, tl, next)) {
       | RouteDoesNotMatch => evalPath(f, Wildcard(tl), next)
       }
-    | (Custom(_, parser, tl), [str, ...next]) =>
+    | (Custom(parser, tl), [str, ...next]) =>
       let value =
         try (parser(str)) {
         | _ => raise(RouteDoesNotMatch)
