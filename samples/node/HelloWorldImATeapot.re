@@ -10,9 +10,9 @@ Server.start(
         Refract.Machine.handled;
       })
   >>> Path.matches(
-        Path.(Constant("hello", End)),
-        ctx => {
-          Js.log("matched");
+        Path.(Constant("hello", String("name", End))),
+        (name, ctx) => {
+          Js.log(name);
           Refract.Machine.handled(ctx);
         },
       )

@@ -77,6 +77,8 @@ let flatMap = (res: Repromise.t(Machine.result), f: Machine.t) =>
 
 let bind = flatMap;
 
+let then_ = flatMap;
+
 let compose: (Machine.t, Machine.t) => Machine.t =
   (a, b, ctx) => flatMap(a(ctx), b);
 
