@@ -11,9 +11,9 @@ Server.start(
       })
   >>> Path.matches(
         Path.(Constant("hello", String(End))),
-        (name, ctx) => {
+        name => {
           Js.log(name);
-          Refract.Machine.handled(ctx);
+          Refract.Machine.handled;
         },
       )
   >>> Response.status(StatusCode.ImATeapot),
