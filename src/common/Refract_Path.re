@@ -3,9 +3,10 @@ exception RouteDoesNotMatch;
 exception MalformedQueryParameter(string, string, exn);
 
 type t('func, 'result) =
-  | End: t('result, 'result)
+  | End: t(unit => 'result, 'result)
   | Constant(string, t('func, 'result)): t('func, 'result)
   | String(t('func, 'result)): t(string => 'func, 'result)
+  | UInt(t('func, 'result)): t(int => 'func, 'result)
   | Int(t('func, 'result)): t(int => 'func, 'result)
   | Float(t('func, 'result)): t(float => 'func, 'result)
   | Wildcard(t('func, 'result)): t('func, 'result)
@@ -28,11 +29,13 @@ let split: Refract_HttpContext.t => list(string) =
       ),
     );
 
+let swizzle = (f, a, b) => f(b, a);
+
 let rec evalPath:
   type func result. (func, t(func, result), list(string)) => result =
   (f, route, parts) =>
     switch (route, parts) {
-    | (End, []) => f
+    | (End, []) => f()
     | (_, []) => raise(RouteDoesNotMatch)
     | (End, _) => raise(RouteDoesNotMatch)
     | (Constant(value, tl), [str, ...next]) when value == str =>
@@ -45,6 +48,16 @@ let rec evalPath:
         | Failure(_) => raise(RouteDoesNotMatch)
         };
       evalPath(f(value), tl, next);
+    | (UInt(tl), [str, ...next]) =>
+      let value =
+        try (int_of_string(str)) {
+        | Failure(_) => raise(RouteDoesNotMatch)
+        };
+      if (value < 0) {
+        raise(RouteDoesNotMatch);
+      } else {
+        evalPath(f(value), tl, next);
+      };
     | (Float(tl), [str, ...next]) =>
       let value =
         try (float_of_string(str)) {

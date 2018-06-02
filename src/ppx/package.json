@@ -1,13 +1,13 @@
 {
-  "name": "ppx_reconstruct",
+  "name": "ppx_refract",
   "version": "0.1.0",
-  "description": "A collection of useful ppxes for reconstruct",
+  "description": "A collection of useful ppxes for refract",
   "license": "MIT",
   "repository": "/ncthbrt/reconstruct",
   "author": {
     "name": "Nick Cuthbert",
     "email": "nick@cuthbert.co.za",
-    "url": "https://github.com/ncthbrt/reconstruct"
+    "url": "https://github.com/ncthbrt/refract"
   },
   "dependencies": {
     "bs-platform": "bsansouci/bsb-native#2.1.1"

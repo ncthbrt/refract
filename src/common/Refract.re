@@ -26,6 +26,7 @@ module Request = {
   let put = isMethod(Method.Put);
   let patch = isMethod(Method.Patch);
   let delete = isMethod(Method.Delete);
+  let options = isMethod(Method.Options);
   let url: (string => Machine.t) => Machine.t =
     (f, ctx) => f(Refract_Request.url(ctx.request), ctx);
 };

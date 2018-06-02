@@ -1,11 +1,11 @@
 (jbuild_version 1)
 
 (library
- ((name reconstruct_ppx)  
+ ((name refract_ppx)  
   (synopsis "Compiler extensions to make writing web servers typesafe")
   (kind ppx_rewriter)
-  (ppx_runtime_libraries (reconstruct str))
+  (ppx_runtime_libraries (refract str))
   (preprocess (pps (ppxlib.metaquot)))  
   #; (flags (:standard -w +A-4-42-40))
   (flags (-w -40 -w +26 -w +A-4))
-(libraries (ppxlib reconstruct str))))
+(libraries (ppxlib tyre str))))
