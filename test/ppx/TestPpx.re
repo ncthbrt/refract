@@ -4,11 +4,11 @@ let () = {
       [
         [%refract "/hello1/{:string}"](name => {
           print_endline("hello unlabelled " ++ name);
-          Refract.Machine.handled;
+          Refract.Prism.handled;
         }),
         [%refract "/hello2/{name:string}/{surname:string}"]((~name, ~surname) => {
           print_endline(name ++ surname);
-          Refract.Machine.handled;
+          Refract.Prism.handled;
         }),
       ],
       Obj.magic(),
@@ -17,7 +17,7 @@ let () = {
   /* [%refract.post "/hello3/{name:string}"]((~name) => {
        let%mesh body = Refract.Request.bodyString;
        print_endline("hello labelled " ++ name ++ " " ++ body);
-       Refract.Machine.handled;
+       Refract.Prism.handled;
      }), */
   /* [%route.post "/hello4/name:string?offset:int=?&limit:uint=?&cached=?"](
        (~name, ~offset=0, ~limit=10, ~cached) => {
@@ -32,7 +32,7 @@ let () = {
          ++ "cached: "
          ++ string_of_bool(cached),
        );
-       Refract.Machine.handled;
+       Refract.Prism.handled;
      }), */
   /* {
        request: {

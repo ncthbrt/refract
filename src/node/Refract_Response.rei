@@ -7,3 +7,5 @@ type t = {
 let empty: t;
 
 let status: (t, Refract_StatusCode.t) => t;
+
+module Body: {let string: (t, string) => t;};

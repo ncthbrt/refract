@@ -21,10 +21,10 @@ lib: [
   "_build/install/default/lib/refract/refract__Refract_Json.cmx" {"refract__Refract_Json.cmx"}
   "_build/install/default/lib/refract/refract__Refract_Json.cmt" {"refract__Refract_Json.cmt"}
   "_build/install/default/lib/refract/Refract_Json.re" {"Refract_Json.re"}
-  "_build/install/default/lib/refract/refract__Refract_Machine.cmi" {"refract__Refract_Machine.cmi"}
-  "_build/install/default/lib/refract/refract__Refract_Machine.cmx" {"refract__Refract_Machine.cmx"}
-  "_build/install/default/lib/refract/refract__Refract_Machine.cmt" {"refract__Refract_Machine.cmt"}
-  "_build/install/default/lib/refract/Refract_Machine.re" {"Refract_Machine.re"}
+  "_build/install/default/lib/refract/refract__Refract_Prism.cmi" {"refract__Refract_Prism.cmi"}
+  "_build/install/default/lib/refract/refract__Refract_Prism.cmx" {"refract__Refract_Prism.cmx"}
+  "_build/install/default/lib/refract/refract__Refract_Prism.cmt" {"refract__Refract_Prism.cmt"}
+  "_build/install/default/lib/refract/Refract_Prism.re" {"Refract_Prism.re"}
   "_build/install/default/lib/refract/refract__Refract_Method.cmi" {"refract__Refract_Method.cmi"}
   "_build/install/default/lib/refract/refract__Refract_Method.cmx" {"refract__Refract_Method.cmx"}
   "_build/install/default/lib/refract/refract__Refract_Method.cmt" {"refract__Refract_Method.cmt"}

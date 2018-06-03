@@ -592,31 +592,6 @@
   peerDependencies:
     ocaml " >= 4.2.3000"
 
-bluebird@^3.4.7:
-  version "3.5.1"
-  resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.5.1.tgz#d9551f9de98f1fcda1e683d17ee91a0602ee2eb9"
-
-commander@^2.9.0:
-  version "2.15.1"
-  resolved "https://registry.yarnpkg.com/commander/-/commander-2.15.1.tgz#df46e867d0fc2aec66a34662b406a9ccafff5b0f"
-
-fs-extra@^2.0.0:
-  version "2.1.2"
-  resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-2.1.2.tgz#046c70163cef9aad46b0e4a7fa467fb22d71de35"
-  dependencies:
-    graceful-fs "^4.1.2"
-    jsonfile "^2.1.0"
-
-graceful-fs@^4.1.2, graceful-fs@^4.1.6:
-  version "4.1.11"
-  resolved "https://registry.yarnpkg.com/graceful-fs/-/graceful-fs-4.1.11.tgz#0e8bdfe4d1ddb8854d64e04ea7c00e2a026e5658"
-
-jsonfile@^2.1.0:
-  version "2.4.0"
-  resolved "https://registry.yarnpkg.com/jsonfile/-/jsonfile-2.4.0.tgz#3736a2b428b87bbda0cc83b53fa3d633a35c2ae8"
-  optionalDependencies:
-    graceful-fs "^4.1.6"
-
 ocaml@~4.6.0:
   version "4.6.1"
   resolved "https://registry.yarnpkg.com/ocaml/-/ocaml-4.6.1.tgz#8babea2c41a9f734313b4fc1841ec0963c9d7a07"
@@ -643,14 +618,6 @@ refmterr@^3.0.4:
     "@opam/reason" facebook/reason#6abc3c31c18a9e4acd8bfbe90faf4d8304791b33
   peerDependencies:
     ocaml "4.6.x"
-
-tyre@^0.1.4:
-  version "0.1.4"
-  resolved "https://registry.yarnpkg.com/tyre/-/tyre-0.1.4.tgz#d66178fbfe21af3c50799ce53030787b74c63331"
-  dependencies:
-    bluebird "^3.4.7"
-    commander "^2.9.0"
-    fs-extra "^2.0.0"
 
 yarn-pkg-config@esy-ocaml/yarn-pkg-config#d488cd9321cd5036bd36ec96744ce78c5d45fc49:
   version "0.29.5"

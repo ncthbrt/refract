@@ -22,17 +22,67 @@ type t = NodeServer.t;
 
 [@bs.send] external listen : (t, int) => unit = "";
 
-let handler = machine =>
+let toResponse = (ctx: Refract_HttpContext.t, nodeRes) => {
+  Refract_Node.Response.writeHead(
+    nodeRes,
+    Refract_StatusCode.toInt(ctx.response.status),
+    ctx.response.headers
+    |. Belt.List.reduce(
+         Js.Dict.empty(),
+         (prev, (k, v)) => {
+           Js.Dict.set(prev, k, v);
+           prev;
+         },
+       ),
+  );
+  switch (ctx.response.body) {
+  | `Empty =>
+    Repromise.resolve(
+      {
+        Refract_Node.Response.end_(nodeRes);
+        ();
+      },
+    )
+  | `String(str) =>
+    let (promise: Repromise.t(unit), resolve) = Repromise.new_();
+    Refract_Node.Response.write(
+      nodeRes,
+      str,
+      `utf8,
+      () => {
+        Refract_Node.Response.end_(nodeRes);
+        resolve();
+        ();
+      },
+    );
+    promise;
+  | `Stream(f) =>
+    f(str => {
+      let (promise: Repromise.t(unit), resolve) = Repromise.new_();
+      Refract_Node.Response.write(nodeRes, str, `utf8, resolve);
+      promise;
+    })
+    |. Repromise.then_(
+         () => {
+           Refract_Node.Response.end_(nodeRes);
+           Repromise.resolve();
+         },
+         _,
+       )
+  };
+};
+
+let handler = prism =>
   (. req, res) => {
     let context: Refract_HttpContext.t = {
       request: req,
       response: Refract_Response.empty,
     };
-    let result = machine(context);
+    let result = prism(context);
     ignore(
       Repromise.then_(
         fun
-        | Refract_Machine.Unhandled(None) =>
+        | Refract_Prism.Unhandled(None) =>
           Repromise.resolve(
             {
               Refract_Node.Response.statusCode(res, 404);
@@ -48,32 +98,23 @@ let handler = machine =>
               },
             );
           }
-        | Handled(ctx) =>
-          Repromise.resolve(
-            {
-              Refract_Node.Response.statusCode(
-                res,
-                Refract_StatusCode.toInt(ctx.response.status),
-              );
-              Refract_Node.Response.end_(res);
-            },
-          ),
+        | Handled(ctx) => toResponse(ctx, res),
         result,
       ),
     );
   };
 
-let start = (~port=3000, machine) => {
-  let server = NodeServer.createServer(handler(machine));
+let start = (~port=3000, prism) => {
+  let server = NodeServer.createServer(handler(prism));
   listen(server, port);
   server;
 };
 
-let startSecure = (~privateKey, ~publicKey, ~port=3000, machine) => {
+let startSecure = (~privateKey, ~publicKey, ~port=3000, prism) => {
   let server =
     NodeServer.createSecureServer(
       {"key": privateKey, "cert": publicKey},
-      handler(machine),
+      handler(prism),
     );
   listen(server, port);
   server;

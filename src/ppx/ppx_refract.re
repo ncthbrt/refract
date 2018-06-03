@@ -242,7 +242,7 @@ module Route = {
       Refract.compose([%e Method.toExpr(method)], [%e create(~loc, str)]);
 };
 
-let createBoundMachine = (mapper: Ast_mapper.mapper, pat, pvbExp, exp, loc) => {
+let createBoundPrism = (mapper: Ast_mapper.mapper, pat, pvbExp, exp, loc) => {
   open Asttypes;
   let pvbExp' = mapper.expr(mapper, pvbExp);
   let exp' = mapper.expr(mapper, exp);
@@ -309,7 +309,7 @@ let mapper = {
           },
         ]),
       ) =>
-      createBoundMachine(mapper, pat, pvb_expr, e', loc)
+      createBoundPrism(mapper, pat, pvb_expr, e', loc)
     | _ => default_mapper.expr(mapper, e)
     },
 };

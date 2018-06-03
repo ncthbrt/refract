@@ -76,13 +76,12 @@ let rec evalPath:
       evalPath(f(value), tl, next);
     };
 
-let matches:
-  type func. (t(func, Refract_Machine.t), func) => Refract_Machine.t =
+let matches: type func. (t(func, Refract_Prism.t), func) => Refract_Prism.t =
   (path, f, ctx) => {
     let pathParts = split(ctx);
     (
       try (evalPath(f, path, pathParts)) {
-      | RouteDoesNotMatch => Refract_Machine.unhandled
+      | RouteDoesNotMatch => Refract_Prism.unhandled
       }
     )(
       ctx,

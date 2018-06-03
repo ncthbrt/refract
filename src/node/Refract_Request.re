@@ -17,3 +17,23 @@ let headers = req => {
 let httpVersion = req => Refract_Node.Request.httpVersion(req);
 
 let url = req => Refract_Node.Request.url(req);
+
+module Body = {
+  let string = req => {
+    let (promise: Repromise.t(_), resolve) = Repromise.new_();
+    let body = [||];
+    Refract_Node.Request.on(
+      req,
+      `data(buffer => ignore(Js.Array.push(buffer, body))),
+    );
+    Refract_Node.Request.on(req, `error((_) => ()));
+    Refract_Node.Request.on(
+      req,
+      `end_(
+        (_) =>
+          resolve(Refract_Node.Buffer.concat(body) |. Node.Buffer.toString),
+      ),
+    );
+    promise;
+  };
+};

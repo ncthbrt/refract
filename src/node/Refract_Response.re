@@ -10,3 +10,7 @@ let status = (res, statusCode: Refract_StatusCode.t) => {
   ...res,
   status: statusCode,
 };
+
+module Body = {
+  let string: (t, string) => t = (res, str) => {...res, body: `String(str)};
+};

@@ -2,19 +2,19 @@ open Refract;
 
 Server.start(
   ~port=9003,
-  Request.get
+  Request.post
   |. compose(
-       Refract.Request.url(url => {
-         Js.log(url);
-         Refract.Machine.handled;
+       Refract.Request.Body.string(body => {
+         Js.log(body);
+         Refract.Prism.handled;
        }),
      )
   |. compose(
        Path.matches(
-         Path.(Constant("hello", String(Int(End))),
+         Path.(Constant("hello", String(End))),
          (name, ()) => {
            Js.log(name);
-           Refract.Machine.handled;
+           Refract.Response.Body.string("hello " ++ name);
          },
        ),
      )

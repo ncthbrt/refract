@@ -1,1 +1,5 @@
-type t = [ | `Empty | `String(string) | `Stream((string => unit) => unit)];
+type t = [
+  | `Empty
+  | `String(string)
+  | `Stream((string => Repromise.t(unit)) => Repromise.t(unit))
+];
