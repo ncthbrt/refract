@@ -260,6 +260,17 @@ module type RefractRequest = {
   let url: t => string;
 };
 
+module type RefractJson = {
+  type t;
+  let tryParse: string => t;
+  module Decoder = {
+    let a: string;
+  };
+  module Encoder = {
+    let a: string;
+  };
+};
+
 module Make = (RefractRequest: RefractRequest, RefractString: RefractString) => {
   module Method = Method;
   module StatusCode = StatusCode;
