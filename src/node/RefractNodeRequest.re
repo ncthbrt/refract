@@ -1,7 +1,9 @@
-type t = Refract_Node.Request.t;
+type t = RefractNode.Request.t;
 
 let method_ = req =>
-  Refract_Method.fromString(Refract_Node.Request.methodAsStr(req))
+  RefractCommon.Method.fromString(
+    RefractNode.Request.methodAsStr(req) |. Js.String.toUpperCase,
+  )
   |. Belt.Option.getExn;
 
 let headers = req => {
@@ -11,27 +13,27 @@ let headers = req => {
     | [] => prev
     | [k] => [(k, ""), ...prev]
     };
-  aux([], Refract_Node.Request.rawHeaders(req) |. Belt.List.fromArray);
+  aux([], RefractNode.Request.rawHeaders(req) |. Belt.List.fromArray);
 };
 
-let httpVersion = req => Refract_Node.Request.httpVersion(req);
+let httpVersion = req => RefractNode.Request.httpVersion(req);
 
-let url = req => Refract_Node.Request.url(req);
+let url = req => RefractNode.Request.url(req);
 
 module Body = {
   let string = req => {
     let (promise: Repromise.t(_), resolve) = Repromise.new_();
     let body = [||];
-    Refract_Node.Request.on(
+    RefractNode.Request.on(
       req,
       `data(buffer => ignore(Js.Array.push(buffer, body))),
     );
-    Refract_Node.Request.on(req, `error((_) => ()));
-    Refract_Node.Request.on(
+    RefractNode.Request.on(req, `error((_) => ()));
+    RefractNode.Request.on(
       req,
       `end_(
         (_) =>
-          resolve(Refract_Node.Buffer.concat(body) |. Node.Buffer.toString),
+          resolve(RefractNode.Buffer.concat(body) |. Node.Buffer.toString),
       ),
     );
     promise;

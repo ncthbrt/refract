@@ -3,7 +3,7 @@
     "**/.git": true,
     "**/.svn": true,
     "**/.hg": true,
-    "**/*.js": false,
+    "**/*.js": true,
     "**/CVS": true,
     "**/.DS_Store": true
   }

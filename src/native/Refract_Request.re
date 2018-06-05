@@ -1,4 +1,5 @@
 type t;
 
 let url = t => "";
-let method_ = t => Refract_Method.Get;
+
+let method_ = t => RefractCommon.Method.Get;
