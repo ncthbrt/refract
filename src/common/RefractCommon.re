@@ -258,6 +258,7 @@ module type RefractRequest = {
   module Body: {let string: t => Repromise.t(string);};
   let method_: t => Method.t;
   let url: t => string;
+  let headers: t => list((string, string));
 };
 
 module type RefractJson = {type t; let tryParse: string => t;};
@@ -269,8 +270,8 @@ module Make = (RefractRequest: RefractRequest, RefractString: RefractString) => 
     type t = {
       request: RefractRequest.t,
       response: RefractResponse.t,
-      /* Todo add cache for parsed parameters */
     };
+    let make = request : t => {request, response: RefractResponse.empty};
   };
   module Prism = {
     type result =
@@ -283,93 +284,93 @@ module Make = (RefractRequest: RefractRequest, RefractString: RefractString) => 
     let unhandledWithError: exn => t =
       (err, _) => Repromise.resolve(Unhandled(Some(err)));
   };
-  module Path = {
-    exception RouteDoesNotMatch;
-    exception MalformedQueryParameter(string, string, exn);
-    type t('func, 'result) =
-      | End: t(unit => 'result, 'result)
-      | Constant(string, t('func, 'result)): t('func, 'result)
-      | String(t('func, 'result)): t(string => 'func, 'result)
-      | UInt(t('func, 'result)): t(int => 'func, 'result)
-      | Int(t('func, 'result)): t(int => 'func, 'result)
-      | Float(t('func, 'result)): t(float => 'func, 'result)
-      | Wildcard(t('func, 'result)): t('func, 'result)
-      | Custom(string => 'a, t('func, 'result)): t('a => 'func, 'result);
-    let split: HttpContext.t => list(string) =
-      ctx =>
-        List.filter(
-          fun
-          | "" => false
-          | _ => true,
-          RefractString.splitOnChar(
-            '/',
-            List.hd(
-              RefractString.splitOnChar(
-                '?',
-                RefractRequest.url(ctx.request),
+  module Request = {
+    module Query = {};
+    module Path = {
+      exception RouteDoesNotMatch;
+      exception MalformedQueryParameter(string, string, exn);
+      type t('func, 'result) =
+        | End: t(unit => 'result, 'result)
+        | Constant(string, t('func, 'result)): t('func, 'result)
+        | String(t('func, 'result)): t(string => 'func, 'result)
+        | UInt(t('func, 'result)): t(int => 'func, 'result)
+        | Int(t('func, 'result)): t(int => 'func, 'result)
+        | Float(t('func, 'result)): t(float => 'func, 'result)
+        | Wildcard(t('func, 'result)): t('func, 'result)
+        | Custom(string => 'a, t('func, 'result)): t('a => 'func, 'result);
+      let split: HttpContext.t => list(string) =
+        ctx =>
+          List.filter(
+            fun
+            | "" => false
+            | _ => true,
+            RefractString.splitOnChar(
+              '/',
+              List.hd(
+                RefractString.splitOnChar(
+                  '?',
+                  RefractRequest.url(ctx.request),
+                ),
               ),
             ),
-          ),
-        );
-    let swizzle = (f, a, b) => f(b, a);
-    let rec evalPath:
-      type func result. (func, t(func, result), list(string)) => result =
-      (f, route, parts) =>
-        switch (route, parts) {
-        | (End, []) => f()
-        | (_, []) => raise(RouteDoesNotMatch)
-        | (End, _) => raise(RouteDoesNotMatch)
-        | (Constant(value, tl), [str, ...next]) when value == str =>
-          evalPath(f, tl, next)
-        | (Constant(_), _) => raise(RouteDoesNotMatch)
-        | (String(tl), [str, ...next]) => evalPath(f(str), tl, next)
-        | (Int(tl), [str, ...next]) =>
-          let value =
-            try (int_of_string(str)) {
-            | Failure(_) => raise(RouteDoesNotMatch)
+          );
+      let swizzle = (f, a, b) => f(b, a);
+      let rec evalPath:
+        type func result. (func, t(func, result), list(string)) => result =
+        (f, route, parts) =>
+          switch (route, parts) {
+          | (End, []) => f()
+          | (_, []) => raise(RouteDoesNotMatch)
+          | (End, _) => raise(RouteDoesNotMatch)
+          | (Constant(value, tl), [str, ...next]) when value == str =>
+            evalPath(f, tl, next)
+          | (Constant(_), _) => raise(RouteDoesNotMatch)
+          | (String(tl), [str, ...next]) => evalPath(f(str), tl, next)
+          | (Int(tl), [str, ...next]) =>
+            let value =
+              try (int_of_string(str)) {
+              | Failure(_) => raise(RouteDoesNotMatch)
+              };
+            evalPath(f(value), tl, next);
+          | (UInt(tl), [str, ...next]) =>
+            let value =
+              try (int_of_string(str)) {
+              | Failure(_) => raise(RouteDoesNotMatch)
+              };
+            if (value < 0) {
+              raise(RouteDoesNotMatch);
+            } else {
+              evalPath(f(value), tl, next);
             };
-          evalPath(f(value), tl, next);
-        | (UInt(tl), [str, ...next]) =>
-          let value =
-            try (int_of_string(str)) {
-            | Failure(_) => raise(RouteDoesNotMatch)
-            };
-          if (value < 0) {
-            raise(RouteDoesNotMatch);
-          } else {
+          | (Float(tl), [str, ...next]) =>
+            let value =
+              try (float_of_string(str)) {
+              | Failure(_) => raise(RouteDoesNotMatch)
+              };
+            evalPath(f(value), tl, next);
+          | (Wildcard(tl), [_, ...next]) =>
+            try (evalPath(f, tl, next)) {
+            | RouteDoesNotMatch => evalPath(f, Wildcard(tl), next)
+            }
+          | (Custom(parser, tl), [str, ...next]) =>
+            let value =
+              try (parser(str)) {
+              | _ => raise(RouteDoesNotMatch)
+              };
             evalPath(f(value), tl, next);
           };
-        | (Float(tl), [str, ...next]) =>
-          let value =
-            try (float_of_string(str)) {
-            | Failure(_) => raise(RouteDoesNotMatch)
-            };
-          evalPath(f(value), tl, next);
-        | (Wildcard(tl), [_, ...next]) =>
-          try (evalPath(f, tl, next)) {
-          | RouteDoesNotMatch => evalPath(f, Wildcard(tl), next)
-          }
-        | (Custom(parser, tl), [str, ...next]) =>
-          let value =
-            try (parser(str)) {
-            | _ => raise(RouteDoesNotMatch)
-            };
-          evalPath(f(value), tl, next);
+      let matches: type func. (t(func, Prism.t), func) => Prism.t =
+        (path, f, ctx) => {
+          let pathParts = split(ctx);
+          (
+            try (evalPath(f, path, pathParts)) {
+            | RouteDoesNotMatch => Prism.unhandled
+            }
+          )(
+            ctx,
+          );
         };
-    let matches: type func. (t(func, Prism.t), func) => Prism.t =
-      (path, f, ctx) => {
-        let pathParts = split(ctx);
-        (
-          try (evalPath(f, path, pathParts)) {
-          | RouteDoesNotMatch => Prism.unhandled
-          }
-        )(
-          ctx,
-        );
-      };
-  };
-  module Query = {};
-  module Request = {
+    };
     module Body = {
       let string = (f: string => Prism.t, ctx: HttpContext.t) => {
         let str = RefractRequest.Body.string(ctx.request);
@@ -390,6 +391,8 @@ module Make = (RefractRequest: RefractRequest, RefractString: RefractString) => 
     let options = isMethod(Method.Options);
     let url: (string => Prism.t) => Prism.t =
       (f, ctx) => f(RefractRequest.url(ctx.request), ctx);
+    let headers = (f, ctx: HttpContext.t) =>
+      f(RefractRequest.headers(ctx.request), ctx);
   };
   module Response = {
     let ok: Prism.t =

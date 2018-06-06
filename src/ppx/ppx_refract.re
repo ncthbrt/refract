@@ -69,16 +69,20 @@ module Path = {
       aux(parts);
     };
   module Locs = {
-    let float = Location.mknoloc(Longident.parse("Refract.Path.Float"));
-    let string = Location.mknoloc(Longident.parse("Refract.Path.String"));
-    let int = Location.mknoloc(Longident.parse("Refract.Path.Int"));
-    let uint = Location.mknoloc(Longident.parse("Refract.Path.UInt"));
+    let float =
+      Location.mknoloc(Longident.parse("Refract.Request.Path.Float"));
+    let string =
+      Location.mknoloc(Longident.parse("Refract.Request.Path.String"));
+    let int = Location.mknoloc(Longident.parse("Refract.Request.Path.Int"));
+    let uint =
+      Location.mknoloc(Longident.parse("Refract.Request.Path.UInt"));
     let constant =
-      Location.mknoloc(Longident.parse("Refract.Path.Constant"));
+      Location.mknoloc(Longident.parse("Refract.Request.Path.Constant"));
     let wildcard =
-      Location.mknoloc(Longident.parse("Refract.Path.Wildcard"));
-    let custom = Location.mknoloc(Longident.parse("Refract.Path.Custom"));
-    let end_ = Location.mknoloc(Longident.parse("Refract.Path.End"));
+      Location.mknoloc(Longident.parse("Refract.Request.Path.Wildcard"));
+    let custom =
+      Location.mknoloc(Longident.parse("Refract.Request.Path.Custom"));
+    let end_ = Location.mknoloc(Longident.parse("Refract.Request.Path.End"));
     let fromName = name => Location.mknoloc(Longident.parse(name));
     let getLoc =
       fun
@@ -232,7 +236,7 @@ module Route = {
       };
     let pathArity = Path.resultArity(path);
     fun%expr (f: _) =>
-      Refract.Path.matches(
+      Refract.Request.Path.matches(
         [%e Path.toExpr(path)],
         [%e createPathFunc(~loc, pathArity, createApplication(~loc, path))],
       );

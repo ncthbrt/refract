@@ -97,7 +97,23 @@ module Request: {
   let method: (Method.t => Prism.t) => Prism.t;
   let isMethod: Method.t => Prism.t;
   let url: (string => Prism.t) => Prism.t;
+  let headers: (list((string, string)) => Prism.t) => Prism.t;
   module Body: {let string: (string => Prism.t) => Prism.t;};
+  module Path: {
+    exception RouteDoesNotMatch;
+    exception MalformedQueryParameter(string, string, exn);
+    type t('func, 'result) =
+      | End: t(unit => 'result, 'result)
+      | Constant(string, t('func, 'result)): t('func, 'result)
+      | String(t('func, 'result)): t(string => 'func, 'result)
+      | UInt(t('func, 'result)): t(int => 'func, 'result)
+      | Int(t('func, 'result)): t(int => 'func, 'result)
+      | Float(t('func, 'result)): t(float => 'func, 'result)
+      | Wildcard(t('func, 'result)): t('func, 'result)
+      | Custom(string => 'a, t('func, 'result)): t('a => 'func, 'result);
+    let matches: (t('a, Prism.t), 'a) => Prism.t;
+  };
+  module Query: {};
 };
 
 module Response: {
@@ -105,23 +121,6 @@ module Response: {
   let notFound: Prism.t;
   let status: StatusCode.t => Prism.t;
   module Body: {let string: string => Prism.t;};
-};
-
-module Query: {};
-
-module Path: {
-  exception RouteDoesNotMatch;
-  exception MalformedQueryParameter(string, string, exn);
-  type t('func, 'result) =
-    | End: t(unit => 'result, 'result)
-    | Constant(string, t('func, 'result)): t('func, 'result)
-    | String(t('func, 'result)): t(string => 'func, 'result)
-    | UInt(t('func, 'result)): t(int => 'func, 'result)
-    | Int(t('func, 'result)): t(int => 'func, 'result)
-    | Float(t('func, 'result)): t(float => 'func, 'result)
-    | Wildcard(t('func, 'result)): t('func, 'result)
-    | Custom(string => 'a, t('func, 'result)): t('a => 'func, 'result);
-  let matches: (t('a, Prism.t), 'a) => Prism.t;
 };
 
 let mapUnhandled:

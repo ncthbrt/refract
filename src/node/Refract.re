@@ -15,7 +15,6 @@ module Bindings = {
     type t;
     [@bs.get] external methodAsStr : t => string = "method";
     [@bs.get] external url : t => string = "";
-    [@bs.get] external httpVersion : t => string = "";
     [@bs.get] external rawHeaders : t => array(string) = "";
     [@bs.send]
     external on :
@@ -32,9 +31,7 @@ module Bindings = {
   };
   module Response = {
     type t;
-    [@bs.send] external setHeader : (t, string, string) => unit = "";
     [@bs.set] external statusCode : (t, int) => unit = "";
-    [@bs.set] external statusMessage : (t, string) => unit = "";
     [@bs.send]
     external write : (t, string, [@bs.string] [ | `utf8], unit => unit) => unit =
       "write";
@@ -46,55 +43,10 @@ module Bindings = {
     [@bs.val "Buffer.concat"]
     external concat : array(Node.Buffer.t) => Node.Buffer.t = "";
   };
-};
-
-module RefractNodeRequest = {
-  type t = Bindings.Request.t;
-  let method_ = req =>
-    RefractCommon.Method.fromString(
-      Bindings.Request.methodAsStr(req) |. Js.String.toUpperCase,
-    )
-    |. Belt.Option.getExn;
-  let headers = req => {
-    let rec aux = (prev, headers) =>
-      switch (headers) {
-      | [k, v, ...tail] => aux([(k, v), ...prev], tail)
-      | [] => prev
-      | [k] => [(k, ""), ...prev]
-      };
-    aux([], Bindings.Request.rawHeaders(req) |. Belt.List.fromArray);
-  };
-  let httpVersion = req => Bindings.Request.httpVersion(req);
-  let url = req => Bindings.Request.url(req);
-  module Body = {
-    let string = req => {
-      let (promise: Repromise.t(_), resolve) = Repromise.new_();
-      let body = [||];
-      Bindings.Request.on(
-        req,
-        `data(buffer => ignore(Js.Array.push(buffer, body))),
-      );
-      Bindings.Request.on(req, `error((_) => ()));
-      Bindings.Request.on(
-        req,
-        `end_(
-          (_) =>
-            resolve(Bindings.Buffer.concat(body) |. Node.Buffer.toString),
-        ),
-      );
-      promise;
-    };
-  };
-};
-
-include RefractCommon.Make(RefractNodeRequest, RefractString);
-
-module Server = {
-  module NodeServer = {
+  module Server = {
     type t;
     [@bs.module "http"]
-    external createServer :
-      ((. RefractNodeRequest.t, Bindings.Response.t) => unit) => t =
+    external createServer : ((. Request.t, Response.t) => unit) => t =
       "createServer";
     [@bs.module "https"]
     external createSecureServer :
@@ -104,12 +56,69 @@ module Server = {
           "key": string,
           "cert": string,
         },
-        (. RefractNodeRequest.t, Bindings.Response.t) => unit
+        (. Request.t, Response.t) => unit
       ) =>
       t =
       "createServer";
   };
-  type t = NodeServer.t;
+};
+
+module RefractRequest = {
+  type t = {
+    innerRequest: Bindings.Request.t,
+    mutable stringBody: option(string),
+  };
+  let make = innerRequest => {innerRequest, stringBody: None};
+  let method_ = ({innerRequest}) =>
+    RefractCommon.Method.fromString(
+      Bindings.Request.methodAsStr(innerRequest) |. Js.String.toUpperCase,
+    )
+    |. Belt.Option.getExn;
+  let headers = ({innerRequest}) => {
+    let rec aux = (prev, headers) =>
+      switch (headers) {
+      | [k, v, ...tail] => aux([(k, v), ...prev], tail)
+      | [] => prev
+      | [k] => [(k, ""), ...prev]
+      };
+    aux(
+      [],
+      Bindings.Request.rawHeaders(innerRequest) |. Belt.List.fromArray,
+    );
+  };
+  let url = ({innerRequest}) => Bindings.Request.url(innerRequest);
+  module Body = {
+    let string = req => {
+      let (promise: Repromise.t(_), resolve) = Repromise.new_();
+      switch (req.stringBody) {
+      | Some(body) => resolve(body)
+      | None =>
+        let body = [||];
+        Bindings.Request.on(
+          req.innerRequest,
+          `data(buffer => ignore(Js.Array.push(buffer, body))),
+        );
+        Bindings.Request.on(req.innerRequest, `error((_) => ()));
+        Bindings.Request.on(
+          req.innerRequest,
+          `end_(
+            (_) => {
+              let str = Bindings.Buffer.concat(body) |. Node.Buffer.toString;
+              req.stringBody = Some(str);
+              resolve(str);
+            },
+          ),
+        );
+      };
+      promise;
+    };
+  };
+};
+
+include RefractCommon.Make(RefractRequest, RefractString);
+
+module Server = {
+  type t = Bindings.Server.t;
   [@bs.send] external listen : (t, int) => unit = "";
   let toResponse = (ctx: HttpContext.t, nodeRes) => {
     Bindings.Response.writeHead(
@@ -161,10 +170,8 @@ module Server = {
   };
   let handler = prism =>
     (. req, res) => {
-      let context: HttpContext.t = {
-        request: req,
-        response: RefractCommon.RefractResponse.empty,
-      };
+      let request = RefractRequest.make(req);
+      let context: HttpContext.t = HttpContext.make(request);
       let result = prism(context);
       ignore(
         Repromise.then_(
@@ -191,13 +198,13 @@ module Server = {
       );
     };
   let start = (~port=3000, prism) => {
-    let server = NodeServer.createServer(handler(prism));
+    let server = Bindings.Server.createServer(handler(prism));
     listen(server, port);
     server;
   };
   let startSecure = (~privateKey, ~publicKey, ~port=3000, prism) => {
     let server =
-      NodeServer.createSecureServer(
+      Bindings.Server.createSecureServer(
         {"key": privateKey, "cert": publicKey},
         handler(prism),
       );
