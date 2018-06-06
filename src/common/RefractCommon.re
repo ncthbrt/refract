@@ -260,16 +260,7 @@ module type RefractRequest = {
   let url: t => string;
 };
 
-module type RefractJson = {
-  type t;
-  let tryParse: string => t;
-  module Decoder = {
-    let a: string;
-  };
-  module Encoder = {
-    let a: string;
-  };
-};
+module type RefractJson = {type t; let tryParse: string => t;};
 
 module Make = (RefractRequest: RefractRequest, RefractString: RefractString) => {
   module Method = Method;
@@ -428,13 +419,6 @@ module Make = (RefractRequest: RefractRequest, RefractString: RefractString) => 
           });
     };
   };
-  let map = (res: Repromise.t(Prism.result), f) =>
-    Repromise.then_(
-      fun
-      | Prism.Handled(ctx) => f(ctx)
-      | Unhandled(err) => Repromise.resolve(Prism.Unhandled(err)),
-      res,
-    );
   let mapUnhandled = (res, f) =>
     Repromise.then_(
       fun
@@ -442,17 +426,15 @@ module Make = (RefractRequest: RefractRequest, RefractString: RefractString) => 
       | Handled(ctx) => Repromise.resolve(Prism.Handled(ctx)),
       res,
     );
-  let flatMap = (res: Repromise.t(Prism.result), f: Prism.t) =>
+  let map = (res: Repromise.t(Prism.result), f: Prism.t) =>
     Repromise.then_(
       fun
       | Prism.Handled(ctx) => f(ctx)
       | Unhandled(e) => Repromise.resolve(Prism.Unhandled(e)),
       res,
     );
-  let bind = flatMap;
-  let then_ = flatMap;
   let compose: (Prism.t, Prism.t) => Prism.t =
-    (a, b, ctx) => flatMap(a(ctx), b);
+    (a, b, ctx) => map(a(ctx), b);
   let rec composeMany: list(Prism.t) => Prism.t =
     (prisms, ctx) =>
       switch (prisms) {
@@ -483,5 +465,4 @@ module Make = (RefractRequest: RefractRequest, RefractString: RefractString) => 
     ) =>
     Prism.t =
     (ma, mb, f, ctx) => ma(a => mb(f(a)), ctx);
-  let convolute = zip;
 };

@@ -1,17 +1,100 @@
+module RefractString = {
+  let uppercaseAsciiChar = c =>
+    if (c >= 'a' && c <= 'z') {
+      Char.unsafe_chr(Char.code(c) - 32);
+    } else {
+      c;
+    };
+  let uppercaseAscii = String.map(uppercaseAsciiChar);
+  let splitOnChar = (chr, str) =>
+    Js.String.split(String.make(1, chr), str) |. Belt.List.fromArray;
+};
+
+module Bindings = {
+  module Request = {
+    type t;
+    [@bs.get] external methodAsStr : t => string = "method";
+    [@bs.get] external url : t => string = "";
+    [@bs.get] external httpVersion : t => string = "";
+    [@bs.get] external rawHeaders : t => array(string) = "";
+    [@bs.send]
+    external on :
+      (
+        t,
+        [@bs.string] [
+          | `data(Node.buffer => unit)
+          | `error(unit => unit)
+          | [@bs.as "end"] `end_(unit => unit)
+        ]
+      ) =>
+      unit =
+      "";
+  };
+  module Response = {
+    type t;
+    [@bs.send] external setHeader : (t, string, string) => unit = "";
+    [@bs.set] external statusCode : (t, int) => unit = "";
+    [@bs.set] external statusMessage : (t, string) => unit = "";
+    [@bs.send]
+    external write : (t, string, [@bs.string] [ | `utf8], unit => unit) => unit =
+      "write";
+    [@bs.send]
+    external writeHead : (t, int, Js.Dict.t(string)) => unit = "writeHead";
+    [@bs.send] external end_ : t => unit = "end";
+  };
+  module Buffer = {
+    [@bs.val "Buffer.concat"]
+    external concat : array(Node.Buffer.t) => Node.Buffer.t = "";
+  };
+};
+
+module RefractNodeRequest = {
+  type t = Bindings.Request.t;
+  let method_ = req =>
+    RefractCommon.Method.fromString(
+      Bindings.Request.methodAsStr(req) |. Js.String.toUpperCase,
+    )
+    |. Belt.Option.getExn;
+  let headers = req => {
+    let rec aux = (prev, headers) =>
+      switch (headers) {
+      | [k, v, ...tail] => aux([(k, v), ...prev], tail)
+      | [] => prev
+      | [k] => [(k, ""), ...prev]
+      };
+    aux([], Bindings.Request.rawHeaders(req) |. Belt.List.fromArray);
+  };
+  let httpVersion = req => Bindings.Request.httpVersion(req);
+  let url = req => Bindings.Request.url(req);
+  module Body = {
+    let string = req => {
+      let (promise: Repromise.t(_), resolve) = Repromise.new_();
+      let body = [||];
+      Bindings.Request.on(
+        req,
+        `data(buffer => ignore(Js.Array.push(buffer, body))),
+      );
+      Bindings.Request.on(req, `error((_) => ()));
+      Bindings.Request.on(
+        req,
+        `end_(
+          (_) =>
+            resolve(Bindings.Buffer.concat(body) |. Node.Buffer.toString),
+        ),
+      );
+      promise;
+    };
+  };
+};
+
 include RefractCommon.Make(RefractNodeRequest, RefractString);
 
-module Server: {
-  type t;
-  let start: (~port: int=?, Prism.t) => t;
-  let startSecure:
-    (~privateKey: string, ~publicKey: string, ~port: int=?, Prism.t) =>
-    t;
-} = {
+module Server = {
   module NodeServer = {
     type t;
     [@bs.module "http"]
     external createServer :
-      ((. RefractNodeRequest.t, RefractNode.Response.t) => unit) => t =
+      ((. RefractNodeRequest.t, Bindings.Response.t) => unit) => t =
       "createServer";
     [@bs.module "https"]
     external createSecureServer :
@@ -21,7 +104,7 @@ module Server: {
           "key": string,
           "cert": string,
         },
-        (. RefractNodeRequest.t, RefractNode.Response.t) => unit
+        (. RefractNodeRequest.t, Bindings.Response.t) => unit
       ) =>
       t =
       "createServer";
@@ -29,7 +112,7 @@ module Server: {
   type t = NodeServer.t;
   [@bs.send] external listen : (t, int) => unit = "";
   let toResponse = (ctx: HttpContext.t, nodeRes) => {
-    RefractNode.Response.writeHead(
+    Bindings.Response.writeHead(
       nodeRes,
       StatusCode.toInt(ctx.response.status),
       ctx.response.headers
@@ -45,32 +128,31 @@ module Server: {
     | `Empty =>
       Repromise.resolve(
         {
-          RefractNode.Response.end_(nodeRes);
+          Bindings.Response.end_(nodeRes);
           ();
         },
       )
     | `String(str) =>
       let (promise: Repromise.t(unit), resolve) = Repromise.new_();
-      RefractNode.Response.write(
+      Bindings.Response.write(
         nodeRes,
         str,
         `utf8,
         () => {
-          RefractNode.Response.end_(nodeRes);
+          Bindings.Response.end_(nodeRes);
           resolve();
-          ();
         },
       );
       promise;
     | `Stream(f) =>
       f(str => {
         let (promise: Repromise.t(unit), resolve) = Repromise.new_();
-        RefractNode.Response.write(nodeRes, str, `utf8, resolve);
+        Bindings.Response.write(nodeRes, str, `utf8, resolve);
         promise;
       })
       |. Repromise.then_(
            () => {
-             RefractNode.Response.end_(nodeRes);
+             Bindings.Response.end_(nodeRes);
              Repromise.resolve();
            },
            _,
@@ -90,16 +172,16 @@ module Server: {
           | Prism.Unhandled(None) =>
             Repromise.resolve(
               {
-                RefractNode.Response.statusCode(res, 404);
-                RefractNode.Response.end_(res);
+                Bindings.Response.statusCode(res, 404);
+                Bindings.Response.end_(res);
               },
             )
           | Unhandled(Some(err)) => {
               Js.Console.error2("Internal Server Error", err);
               Repromise.resolve(
                 {
-                  RefractNode.Response.statusCode(res, 500);
-                  RefractNode.Response.end_(res);
+                  Bindings.Response.statusCode(res, 500);
+                  Bindings.Response.end_(res);
                 },
               );
             }
