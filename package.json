@@ -1,12 +1,12 @@
 {
-  "name": "node-refract",
+  "name": "refract-node",
   "version": "0.1.0",
-  "description": "let reason-nact = (node.js, reason, actors) ⇒ your µ services have never been so typed",
-  "repository": "https://github.com/ncthbrt/reason-nact",
+  "description": "A composable web framework for OCaml & ReasonML",
+  "repository": "https://github.com/ncthbrt/refract",
   "author": "Nick Cuthbert (https://github.com/ncthbrt)",
-  "license": "Apache-2.0",
+  "license": "MIT",
   "bugs": {
-    "url": "http://github.com/ncthbrt/reason-nact/issues"
+    "url": "http://github.com/ncthbrt/refract/issues"
   },
   "scripts": {
     "build": "bsb -make-world",
@@ -22,7 +22,6 @@
     "bs-platform": "^3.1.4"
   },
   "dependencies": {
-    "repromise": "github:aantron/repromise",
-    "start": "^5.1.0"
+    "repromise": "github:aantron/repromise"
   }
 }
