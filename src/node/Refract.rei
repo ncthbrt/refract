@@ -77,6 +77,14 @@ module StatusCode: {
   let fromInt: int => option(t);
 };
 
+module Protocol: {
+  type t =
+    | Http
+    | Https;
+  let toString: t => string;
+  let fromString: string => option(t);
+};
+
 module HttpContext: {type t;};
 
 module Prism: {
@@ -96,10 +104,11 @@ module Request: {
   let options: Prism.t;
   let method: (Method.t => Prism.t) => Prism.t;
   let isMethod: Method.t => Prism.t;
-  let url: (string => Prism.t) => Prism.t;
+  let pathname: (list(string) => Prism.t) => Prism.t;
   let headers: (list((string, string)) => Prism.t) => Prism.t;
+  let query: (list((string, option(string))) => Prism.t) => Prism.t;
   module Body: {let string: (string => Prism.t) => Prism.t;};
-  module Path: {
+  module Pathname: {
     exception RouteDoesNotMatch;
     exception MalformedQueryParameter(string, string, exn);
     type t('func, 'result) =

@@ -1,6 +1,16 @@
+/* RefractString.splitOnChar(
+     '/',
+     List.hd(
+       RefractString.splitOnChar(
+         '?',
+         RefractRequest.url(ctx.request),
+       ),
+     ),
+   ) */
 module type RefractString = {
   let uppercaseAscii: string => string;
   let splitOnChar: (char, string) => list(string);
+  let splitFirst: (char, string) => (string, option(string));
 };
 
 module Method = {
@@ -257,7 +267,8 @@ module type RefractRequest = {
   type t;
   module Body: {let string: t => Repromise.t(string);};
   let method_: t => Method.t;
-  let url: t => string;
+  let pathname: t => list(string);
+  let query: t => list((string, option(string)));
   let headers: t => list((string, string));
 };
 
@@ -273,6 +284,20 @@ module Make = (RefractRequest: RefractRequest, RefractString: RefractString) => 
     };
     let make = request : t => {request, response: RefractResponse.empty};
   };
+  module Protocol = {
+    type t =
+      | Http
+      | Https;
+    let toString =
+      fun
+      | Http => "http"
+      | Https => "https";
+    let fromString =
+      fun
+      | "http" => Some(Http)
+      | "https" => Some(Https)
+      | _ => None;
+  };
   module Prism = {
     type result =
       | Unhandled(option(exn))
@@ -286,7 +311,17 @@ module Make = (RefractRequest: RefractRequest, RefractString: RefractString) => 
   };
   module Request = {
     module Query = {};
-    module Path = {
+    let pathname: (list(string) => Prism.t) => Prism.t =
+      (f, ctx) => {
+        let pathname = RefractRequest.pathname(ctx.request);
+        f(pathname, ctx);
+      };
+    let query: (list((string, option(string))) => Prism.t) => Prism.t =
+      (f, ctx) => {
+        let query = RefractRequest.query(ctx.request);
+        f(query, ctx);
+      };
+    module Pathname = {
       exception RouteDoesNotMatch;
       exception MalformedQueryParameter(string, string, exn);
       type t('func, 'result) =
@@ -298,22 +333,6 @@ module Make = (RefractRequest: RefractRequest, RefractString: RefractString) => 
         | Float(t('func, 'result)): t(float => 'func, 'result)
         | Wildcard(t('func, 'result)): t('func, 'result)
         | Custom(string => 'a, t('func, 'result)): t('a => 'func, 'result);
-      let split: HttpContext.t => list(string) =
-        ctx =>
-          List.filter(
-            fun
-            | "" => false
-            | _ => true,
-            RefractString.splitOnChar(
-              '/',
-              List.hd(
-                RefractString.splitOnChar(
-                  '?',
-                  RefractRequest.url(ctx.request),
-                ),
-              ),
-            ),
-          );
       let swizzle = (f, a, b) => f(b, a);
       let rec evalPath:
         type func result. (func, t(func, result), list(string)) => result =
@@ -360,16 +379,12 @@ module Make = (RefractRequest: RefractRequest, RefractString: RefractString) => 
             evalPath(f(value), tl, next);
           };
       let matches: type func. (t(func, Prism.t), func) => Prism.t =
-        (path, f, ctx) => {
-          let pathParts = split(ctx);
-          (
-            try (evalPath(f, path, pathParts)) {
+        (pathPat, f) =>
+          pathname(pathParts =>
+            try (evalPath(f, pathPat, pathParts)) {
             | RouteDoesNotMatch => Prism.unhandled
             }
-          )(
-            ctx,
           );
-        };
     };
     module Body = {
       let string = (f: string => Prism.t, ctx: HttpContext.t) => {
@@ -389,8 +404,6 @@ module Make = (RefractRequest: RefractRequest, RefractString: RefractString) => 
     let patch = isMethod(Method.Patch);
     let delete = isMethod(Method.Delete);
     let options = isMethod(Method.Options);
-    let url: (string => Prism.t) => Prism.t =
-      (f, ctx) => f(RefractRequest.url(ctx.request), ctx);
     let headers = (f, ctx: HttpContext.t) =>
       f(RefractRequest.headers(ctx.request), ctx);
   };

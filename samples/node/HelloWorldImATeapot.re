@@ -4,19 +4,13 @@ Server.start(
   ~port=9003,
   Request.post
   |. compose(
-       Refract.Request.Body.string(body => {
+       Request.Body.string(body => {
          Js.log(body);
          Refract.Prism.handled;
        }),
      )
   |. compose(
-       Refract.Request.Body.string(body => {
-         Js.log(body);
-         Refract.Prism.handled;
-       }),
-     )
-  |. compose(
-       Request.Path.(
+       Request.Pathname.(
          matches(
            Constant("hello", String(End)),
            (name, ()) => {

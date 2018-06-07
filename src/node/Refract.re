@@ -8,6 +8,17 @@ module RefractString = {
   let uppercaseAscii = String.map(uppercaseAsciiChar);
   let splitOnChar = (chr, str) =>
     Js.String.split(String.make(1, chr), str) |. Belt.List.fromArray;
+  let splitFirst = (chr, str) => {
+    let index = Js.String.indexOf(String.make(1, chr), str);
+    if (index > 0) {
+      (
+        Js.String.substring(~from=0, ~to_=index, str),
+        Some(Js.String.substr(~from=index, str)),
+      );
+    } else {
+      (str, None);
+    };
+  };
 };
 
 module Bindings = {
@@ -61,14 +72,29 @@ module Bindings = {
       t =
       "createServer";
   };
+  module Url = {
+    type t;
+    [@bs.module "url"] [@bs.val] external parse : string => t = "parse";
+    [@bs.get] external pathname : t => string = "pathname";
+    [@bs.get] external query : t => string = "query";
+  };
 };
 
 module RefractRequest = {
   type t = {
     innerRequest: Bindings.Request.t,
-    mutable stringBody: option(string),
+    mutable body: option(Node.Buffer.t),
+    mutable parsedUrl: option(Bindings.Url.t),
+    mutable parsedPathname: option(list(string)),
+    mutable parsedQuery: option(list((string, option(string)))),
   };
-  let make = innerRequest => {innerRequest, stringBody: None};
+  let make = innerRequest => {
+    innerRequest,
+    body: None,
+    parsedUrl: None,
+    parsedPathname: None,
+    parsedQuery: None,
+  };
   let method_ = ({innerRequest}) =>
     RefractCommon.Method.fromString(
       Bindings.Request.methodAsStr(innerRequest) |. Js.String.toUpperCase,
@@ -86,12 +112,50 @@ module RefractRequest = {
       Bindings.Request.rawHeaders(innerRequest) |. Belt.List.fromArray,
     );
   };
-  let url = ({innerRequest}) => Bindings.Request.url(innerRequest);
+  let url = req =>
+    switch (req.parsedUrl) {
+    | Some(url) => url
+    | None =>
+      let url = Bindings.Request.url(req.innerRequest);
+      let parsedUrl = Bindings.Url.parse(url);
+      req.parsedUrl = Some(parsedUrl);
+      parsedUrl;
+    };
+  let query = req =>
+    switch (req.parsedQuery) {
+    | Some(query) => query
+    | None =>
+      let url = url(req);
+      let query = Bindings.Url.query(url);
+      let parsedQuery =
+        if (query == "") {
+          [];
+        } else {
+          let query =
+            List.map(
+              x => RefractString.splitFirst('=', x),
+              RefractString.splitOnChar('&', query),
+            );
+          query;
+        };
+      req.parsedQuery = Some(parsedQuery);
+      parsedQuery;
+    };
+  let pathname = req =>
+    switch (req.parsedPathname) {
+    | Some(p) => p
+    | None =>
+      let url = url(req);
+      let pathname = Bindings.Url.pathname(url);
+      let parsedPathname = RefractString.splitOnChar('/', pathname);
+      req.parsedPathname = Some(parsedPathname);
+      parsedPathname;
+    };
   module Body = {
     let string = req => {
       let (promise: Repromise.t(_), resolve) = Repromise.new_();
-      switch (req.stringBody) {
-      | Some(body) => resolve(body)
+      switch (req.body) {
+      | Some(body) => resolve(body |. Node.Buffer.toString)
       | None =>
         let body = [||];
         Bindings.Request.on(
@@ -103,9 +167,9 @@ module RefractRequest = {
           req.innerRequest,
           `end_(
             (_) => {
-              let str = Bindings.Buffer.concat(body) |. Node.Buffer.toString;
-              req.stringBody = Some(str);
-              resolve(str);
+              let buffer = Bindings.Buffer.concat(body);
+              req.body = Some(buffer);
+              resolve(buffer |. Node.Buffer.toString);
             },
           ),
         );
