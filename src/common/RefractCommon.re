@@ -1,12 +1,3 @@
-/* RefractString.splitOnChar(
-     '/',
-     List.hd(
-       RefractString.splitOnChar(
-         '?',
-         RefractRequest.url(ctx.request),
-       ),
-     ),
-   ) */
 module type RefractString = {
   let uppercaseAscii: string => string;
   let splitOnChar: (char, string) => list(string);
