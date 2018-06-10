@@ -1,15 +1,16 @@
 module Json: {
   type t;
-  /* type encoder('a) = 'a => t;
-     type decoder('a) = t => 'a;
-     module Decoder: {
-       let null: decoder(unit);
-       let bool: decoder(bool);
-       let string: decoder(string);
-       let float: decoder(float);
-       let assoc: decoder(list((string, t)));
-       let list: decoder(list(t));
-     }; */
+  type encoder('a) = 'a => t;
+  type decoder('a) = t => 'a;
+  module Decoder: {
+    exception DecodeError(string, t, option(exn));
+    let null: decoder(unit);
+    let bool: decoder(bool);
+    let string: decoder(string);
+    let float: decoder(float);
+    let assoc: decoder('a) => decoder(list((string, 'a)));
+    let list: decoder('a) => decoder(list('a));
+  };
 };
 
 module Method: {

@@ -285,7 +285,7 @@ module Make =
          RefractJson: RefractJson,
        ) => {
   module Json = {
-    type t;
+    include RefractJson;
   };
   module Method = Method;
   module StatusCode = StatusCode;
