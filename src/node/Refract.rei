@@ -1,3 +1,17 @@
+module Json: {
+  type t;
+  /* type encoder('a) = 'a => t;
+     type decoder('a) = t => 'a;
+     module Decoder: {
+       let null: decoder(unit);
+       let bool: decoder(bool);
+       let string: decoder(string);
+       let float: decoder(float);
+       let assoc: decoder(list((string, t)));
+       let list: decoder(list(t));
+     }; */
+};
+
 module Method: {
   type t =
     | Get

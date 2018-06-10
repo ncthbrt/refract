@@ -80,6 +80,100 @@ module Bindings = {
   };
 };
 
+module RefractJson = {
+  type t = Js.Json.t;
+  type encoder('a) = 'a => t;
+  type decoder('a) = t => 'a;
+  module Decoder = {
+    exception DecodeError(string, Js.Json.t, option(exn));
+    let null: decoder(unit) =
+      (json: Js.Json.t) =>
+        Js.Json.null == json ?
+          () :
+          raise(
+            DecodeError(
+              "excepted null got: " ++ Js.Json.stringify(json),
+              json,
+              None,
+            ),
+          );
+    let bool = (json: Js.Json.t) =>
+      if (Js.typeof(json) == "boolean") {
+        (Obj.magic(json): bool);
+      } else {
+        raise(
+          DecodeError(
+            "expected boolean, got " ++ Js.Json.stringify(json),
+            json,
+            None,
+          ),
+        );
+      };
+    let string = (json: Js.Json.t) =>
+      if (Js.typeof(json) == "string") {
+        (Obj.magic(json): string);
+      } else {
+        raise(
+          DecodeError(
+            "expected string, got " ++ Js.Json.stringify(json),
+            json,
+            None,
+          ),
+        );
+      };
+    let float = (json: Js.Json.t) =>
+      if (Js.typeof(json) == "number") {
+        (Obj.magic(json): float);
+      } else {
+        raise(
+          DecodeError(
+            "expected float, got " ++ Js.Json.stringify(json),
+            json,
+            None,
+          ),
+        );
+      };
+    let assoc = (innerDecoder, json) =>
+      if (Js.typeof(json) == "object"
+          && ! Js.Array.isArray(json)
+          && ! ((Obj.magic(json): Js.null('a)) == Js.null)) {
+        let jsDict: Js.Dict.t(Js.Json.t) = Obj.magic(json);
+        try (
+          Js.Dict.entries(jsDict)
+          |. Belt.List.fromArray
+          |. Belt.List.map(((k, v)) => (k, innerDecoder(v)))
+        ) {
+        | DecodeError(_, _, _) as e =>
+          raise(DecodeError("failed to decode assoc value", json, Some(e)))
+        };
+      } else {
+        raise(
+          DecodeError(
+            "expected array, got " ++ Js.Json.stringify(json),
+            json,
+            None,
+          ),
+        );
+      };
+    let list = (innerDecoder, json) =>
+      if (Js.Array.isArray(json)) {
+        let jsonArr: array(Js.Json.t) = Obj.magic(json);
+        try (jsonArr |. Belt.List.fromArray |. Belt.List.map(innerDecoder)) {
+        | DecodeError(_, _, _) as e =>
+          raise(DecodeError("failed to decode list value", json, Some(e)))
+        };
+      } else {
+        raise(
+          DecodeError(
+            "expected array, got " ++ Js.Json.stringify(json),
+            json,
+            None,
+          ),
+        );
+      };
+  };
+};
+
 module RefractRequest = {
   type t = {
     innerRequest: Bindings.Request.t,
@@ -179,7 +273,7 @@ module RefractRequest = {
   };
 };
 
-include RefractCommon.Make(RefractRequest, RefractString);
+include RefractCommon.Make(RefractRequest, RefractString, RefractJson);
 
 module Server = {
   type t = Bindings.Server.t;

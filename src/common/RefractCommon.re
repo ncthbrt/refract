@@ -263,9 +263,30 @@ module type RefractRequest = {
   let headers: t => list((string, string));
 };
 
-module type RefractJson = {type t; let tryParse: string => t;};
+module type RefractJson = {
+  type t;
+  type encoder('a) = 'a => t;
+  type decoder('a) = t => 'a;
+  module Decoder: {
+    exception DecodeError(string, t, option(exn));
+    let null: decoder(unit);
+    let bool: decoder(bool);
+    let string: decoder(string);
+    let float: decoder(float);
+    let assoc: decoder('a) => decoder(list((string, 'a)));
+    let list: decoder('a) => decoder(list('a));
+  };
+};
 
-module Make = (RefractRequest: RefractRequest, RefractString: RefractString) => {
+module Make =
+       (
+         RefractRequest: RefractRequest,
+         RefractString: RefractString,
+         RefractJson: RefractJson,
+       ) => {
+  module Json = {
+    type t;
+  };
   module Method = Method;
   module StatusCode = StatusCode;
   module HttpContext = {
