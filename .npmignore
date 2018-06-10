@@ -5,6 +5,15 @@ src/native/
 test/
 .vscode/
 
+RefractLogo.ai
+esy.json
+esy.lock
+jbuild-ignore
+.travis.yml
+refract.install
+refract.opam
+
+
 # Logs
 logs
 *.log

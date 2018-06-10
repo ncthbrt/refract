@@ -11,8 +11,8 @@ module Json: {
     let assoc: decoder('a) => decoder(list((string, 'a)));
     let list: decoder('a) => decoder(list('a));
   };
-  let toString: t => string;
-  let fromString: string => t;
+  /* let toString: t => string;
+     let fromString: string => t; */
 };
 
 module Method: {
