@@ -1,6 +1,6 @@
 {
   "name": "refract-node",
-  "version": "0.1.10000",
+  "version": "0.1.10001",
   "description": "A composable web framework for OCaml & ReasonML",
   "repository": "https://github.com/ncthbrt/refract",
   "author": "Nick Cuthbert (https://github.com/ncthbrt)",
@@ -13,6 +13,7 @@
     "start": "bsb -make-world -w",
     "clean": "bsb -clean-world",
     "coverage": "nyc report --temp-directory=coverage --reporter=text-lcov | coveralls",
+    "postinstall": "node copyPlatformBinaryInPlace.js",
     "pretest": "yarn run build",
     "prepush": "yarn run build && yarn run local-test",
     "prepare": "yarn run clean && yarn run build"

@@ -1,5 +1,5 @@
-type t;
+/* type t;
 
-let url = t => "";
+   let url = t => "";
 
-let method_ = t => RefractCommon.Method.Get;
+   let method_ = t => RefractCommon.Method.Get; */

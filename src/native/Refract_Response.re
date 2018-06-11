@@ -1,3 +1,3 @@
-type t;
+/* type t;
 
-let status = (res, statusCode) => res;
+   let status = (res, statusCode) => res; */
