@@ -18,7 +18,6 @@ B /Users/ncthbrt/.esy/3_________________________________________________________
 B /Users/ncthbrt/.esy/3_________________________________________________________________/i/opam__slash__stdio-100000000.11.0-e6495f92/lib/stdio
 B /Users/ncthbrt/.esy/3_________________________________________________________________/i/opam__slash__tyre-0.3.0-b0f26da4/lib/tyre
 FLG -open Refract_ppx -w -40 -w +26 -w +A-4
-FLG -ppx '/Users/ncthbrt/git/refract/_build/default/.ppx/ppxlib.metaquot/ppx.exe --as-ppx --cookie '\''library-name="refract_ppx"'\'''
 S .
 S /Users/ncthbrt/.esy/3_________________________________________________________________/i/opam__slash__base-100000000.11.0-8297edb9/lib/base
 S /Users/ncthbrt/.esy/3_________________________________________________________________/i/opam__slash__base-100000000.11.0-8297edb9/lib/base/caml

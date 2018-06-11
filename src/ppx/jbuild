@@ -4,7 +4,6 @@
  ((name refract_ppx)  
   (synopsis "Compiler extensions to make writing web servers typesafe")
   (kind ppx_rewriter)
-  (ppx_runtime_libraries (refract str))
-  (preprocess (pps (ppxlib.metaquot)))  
+  (ppx_runtime_libraries (refract str))  
   (flags (-w -40 -w +26 -w +A-4))
 (libraries (ppxlib tyre str))))
