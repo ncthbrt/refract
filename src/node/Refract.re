@@ -81,6 +81,7 @@ module Bindings = {
 };
 
 module RefractJson = {
+  exception JsonParseError(string);
   type t = Js.Json.t;
   type encoder('a) = 'a => t;
   type decoder('a) = t => 'a;
@@ -172,6 +173,12 @@ module RefractJson = {
         );
       };
   };
+  let toString = Js.Json.stringify;
+  let fromString = json =>
+    try (Js.Json.parseExn(json)) {
+    | Js.Exn.Error(e) =>
+      raise(JsonParseError(Js.Exn.message(e) |. Belt.Option.getExn))
+    };
 };
 
 module RefractRequest = {
@@ -249,7 +256,7 @@ module RefractRequest = {
     let string = req => {
       let (promise: Repromise.t(_), resolve) = Repromise.new_();
       switch (req.body) {
-      | Some(body) => resolve(body |. Node.Buffer.toString)
+      | Some(body) => resolve(`Ok(body |. Node.Buffer.toString))
       | None =>
         let body = [||];
         Bindings.Request.on(
@@ -263,7 +270,7 @@ module RefractRequest = {
             (_) => {
               let buffer = Bindings.Buffer.concat(body);
               req.body = Some(buffer);
-              resolve(buffer |. Node.Buffer.toString);
+              resolve(`Ok(buffer |. Node.Buffer.toString));
             },
           ),
         );

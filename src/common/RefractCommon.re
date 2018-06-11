@@ -256,7 +256,9 @@ module RefractResponse = {
 
 module type RefractRequest = {
   type t;
-  module Body: {let string: t => Repromise.t(string);};
+  module Body: {
+    let string: t => Repromise.t([ | `Ok(string) | `Error(exn)]);
+  };
   let method_: t => Method.t;
   let pathname: t => list(string);
   let query: t => list((string, option(string)));
@@ -264,6 +266,7 @@ module type RefractRequest = {
 };
 
 module type RefractJson = {
+  exception JsonParseError(string);
   type t;
   type encoder('a) = 'a => t;
   type decoder('a) = t => 'a;
@@ -276,6 +279,8 @@ module type RefractJson = {
     let assoc: decoder('a) => decoder(list((string, 'a)));
     let list: decoder('a) => decoder(list('a));
   };
+  let toString: t => string;
+  let fromString: string => t;
 };
 
 module Make =
@@ -401,8 +406,20 @@ module Make =
     module Body = {
       let string = (f: string => Prism.t, ctx: HttpContext.t) => {
         let str = RefractRequest.Body.string(ctx.request);
-        Repromise.then_(str => f(str, ctx), str);
+        Repromise.then_(
+          fun
+          | `Ok(str) => f(str, ctx)
+          | `Error(e) => Prism.unhandledWithError(e, ctx),
+          str,
+        );
       };
+      let json: (Json.decoder('a), 'a => Prism.t) => Prism.t =
+        (decoder, f) =>
+          string(str =>
+            try (f(decoder(Json.fromString(str)))) {
+            | e => Prism.unhandledWithError(e)
+            }
+          );
     };
     let method: (Method.t => Prism.t) => Prism.t =
       (f, ctx) => f(RefractRequest.method_(ctx.request), ctx);
@@ -445,6 +462,8 @@ module Make =
             ...ctx,
             response: RefractResponse.Body.string(ctx.response, str),
           });
+      let json: (Json.encoder('a), 'a) => Prism.t =
+        (encoder, value) => string(Json.toString(encoder(value)));
     };
   };
   let mapUnhandled = (res, f) =>

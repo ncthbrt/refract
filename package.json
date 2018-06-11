@@ -1,6 +1,6 @@
 {
   "name": "refract-node",
-  "version": "0.1.0",
+  "version": "0.1.10000",
   "description": "A composable web framework for OCaml & ReasonML",
   "repository": "https://github.com/ncthbrt/refract",
   "author": "Nick Cuthbert (https://github.com/ncthbrt)",

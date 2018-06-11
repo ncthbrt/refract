@@ -1,4 +1,5 @@
 module Json: {
+  exception JsonParseError(string);
   type t;
   type encoder('a) = 'a => t;
   type decoder('a) = t => 'a;
@@ -11,8 +12,6 @@ module Json: {
     let assoc: decoder('a) => decoder(list((string, 'a)));
     let list: decoder('a) => decoder(list('a));
   };
-  /* let toString: t => string;
-     let fromString: string => t; */
 };
 
 module Method: {
@@ -124,7 +123,10 @@ module Request: {
   let pathname: (list(string) => Prism.t) => Prism.t;
   let headers: (list((string, string)) => Prism.t) => Prism.t;
   let query: (list((string, option(string))) => Prism.t) => Prism.t;
-  module Body: {let string: (string => Prism.t) => Prism.t;};
+  module Body: {
+    let string: (string => Prism.t) => Prism.t;
+    let json: (Json.decoder('a), 'a => Prism.t) => Prism.t;
+  };
   module Pathname: {
     exception RouteDoesNotMatch;
     exception MalformedQueryParameter(string, string, exn);
@@ -146,7 +148,10 @@ module Response: {
   let ok: Prism.t;
   let notFound: Prism.t;
   let status: StatusCode.t => Prism.t;
-  module Body: {let string: string => Prism.t;};
+  module Body: {
+    let string: string => Prism.t;
+    let json: (Json.encoder('a), 'a) => Prism.t;
+  };
 };
 
 let mapUnhandled:
