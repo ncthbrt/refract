@@ -29,7 +29,7 @@
     "@esy-ocaml/reason": "^3.0.0",
     "@opam/alcotest": "^0.8.3",
     "@opam/jbuilder": "^1.0.0-beta20",
-    "@opam/ppxlib": "^0.2.0",
+    "@opam/ocaml-migrate-parsetree": "^1.0.11",
     "@opam/tyre": "^0.3.0",
     "refmterr": "^3.0.4",
     "repromise": "github:aantron/repromise"
