@@ -72,7 +72,6 @@ typings/
 
 # dotenv environment variables file
 .env
-**/*.js
 
 lib/
 _build/
