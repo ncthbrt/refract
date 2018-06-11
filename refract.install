@@ -1,42 +1,18 @@
 lib: [
   "_build/install/default/lib/refract/META" {"META"}
   "_build/install/default/lib/refract/opam" {"opam"}
-  "_build/install/default/lib/refract/Refract.cmi" {"Refract.cmi"}
-  "_build/install/default/lib/refract/Refract.cmx" {"Refract.cmx"}
-  "_build/install/default/lib/refract/Refract.cmt" {"Refract.cmt"}
-  "_build/install/default/lib/refract/Refract.re" {"Refract.re"}
-  "_build/install/default/lib/refract/refract__Refract_Body.cmi" {"refract__Refract_Body.cmi"}
-  "_build/install/default/lib/refract/refract__Refract_Body.cmx" {"refract__Refract_Body.cmx"}
-  "_build/install/default/lib/refract/refract__Refract_Body.cmt" {"refract__Refract_Body.cmt"}
-  "_build/install/default/lib/refract/Refract_Body.re" {"Refract_Body.re"}
+  "_build/install/default/lib/refract/refract.cmi" {"refract.cmi"}
+  "_build/install/default/lib/refract/refract.cmx" {"refract.cmx"}
+  "_build/install/default/lib/refract/refract.cmt" {"refract.cmt"}
+  "_build/install/default/lib/refract/refract.ml-gen" {"refract.ml-gen"}
+  "_build/install/default/lib/refract/refract__RefractCommon.cmi" {"refract__RefractCommon.cmi"}
+  "_build/install/default/lib/refract/refract__RefractCommon.cmx" {"refract__RefractCommon.cmx"}
+  "_build/install/default/lib/refract/refract__RefractCommon.cmt" {"refract__RefractCommon.cmt"}
+  "_build/install/default/lib/refract/RefractCommon.re" {"RefractCommon.re"}
   "_build/install/default/lib/refract/refract__Refract_CrossplatString.cmi" {"refract__Refract_CrossplatString.cmi"}
   "_build/install/default/lib/refract/refract__Refract_CrossplatString.cmx" {"refract__Refract_CrossplatString.cmx"}
   "_build/install/default/lib/refract/refract__Refract_CrossplatString.cmt" {"refract__Refract_CrossplatString.cmt"}
   "_build/install/default/lib/refract/Refract_CrossplatString.re" {"Refract_CrossplatString.re"}
-  "_build/install/default/lib/refract/refract__Refract_HttpContext.cmi" {"refract__Refract_HttpContext.cmi"}
-  "_build/install/default/lib/refract/refract__Refract_HttpContext.cmx" {"refract__Refract_HttpContext.cmx"}
-  "_build/install/default/lib/refract/refract__Refract_HttpContext.cmt" {"refract__Refract_HttpContext.cmt"}
-  "_build/install/default/lib/refract/Refract_HttpContext.re" {"Refract_HttpContext.re"}
-  "_build/install/default/lib/refract/refract__Refract_Json.cmi" {"refract__Refract_Json.cmi"}
-  "_build/install/default/lib/refract/refract__Refract_Json.cmx" {"refract__Refract_Json.cmx"}
-  "_build/install/default/lib/refract/refract__Refract_Json.cmt" {"refract__Refract_Json.cmt"}
-  "_build/install/default/lib/refract/Refract_Json.re" {"Refract_Json.re"}
-  "_build/install/default/lib/refract/refract__Refract_Prism.cmi" {"refract__Refract_Prism.cmi"}
-  "_build/install/default/lib/refract/refract__Refract_Prism.cmx" {"refract__Refract_Prism.cmx"}
-  "_build/install/default/lib/refract/refract__Refract_Prism.cmt" {"refract__Refract_Prism.cmt"}
-  "_build/install/default/lib/refract/Refract_Prism.re" {"Refract_Prism.re"}
-  "_build/install/default/lib/refract/refract__Refract_Method.cmi" {"refract__Refract_Method.cmi"}
-  "_build/install/default/lib/refract/refract__Refract_Method.cmx" {"refract__Refract_Method.cmx"}
-  "_build/install/default/lib/refract/refract__Refract_Method.cmt" {"refract__Refract_Method.cmt"}
-  "_build/install/default/lib/refract/Refract_Method.re" {"Refract_Method.re"}
-  "_build/install/default/lib/refract/refract__Refract_Path.cmi" {"refract__Refract_Path.cmi"}
-  "_build/install/default/lib/refract/refract__Refract_Path.cmx" {"refract__Refract_Path.cmx"}
-  "_build/install/default/lib/refract/refract__Refract_Path.cmt" {"refract__Refract_Path.cmt"}
-  "_build/install/default/lib/refract/Refract_Path.re" {"Refract_Path.re"}
-  "_build/install/default/lib/refract/refract__Refract_Query.cmi" {"refract__Refract_Query.cmi"}
-  "_build/install/default/lib/refract/refract__Refract_Query.cmx" {"refract__Refract_Query.cmx"}
-  "_build/install/default/lib/refract/refract__Refract_Query.cmt" {"refract__Refract_Query.cmt"}
-  "_build/install/default/lib/refract/Refract_Query.re" {"Refract_Query.re"}
   "_build/install/default/lib/refract/refract__Refract_Request.cmi" {"refract__Refract_Request.cmi"}
   "_build/install/default/lib/refract/refract__Refract_Request.cmx" {"refract__Refract_Request.cmx"}
   "_build/install/default/lib/refract/refract__Refract_Request.cmt" {"refract__Refract_Request.cmt"}
@@ -45,14 +21,6 @@ lib: [
   "_build/install/default/lib/refract/refract__Refract_Response.cmx" {"refract__Refract_Response.cmx"}
   "_build/install/default/lib/refract/refract__Refract_Response.cmt" {"refract__Refract_Response.cmt"}
   "_build/install/default/lib/refract/Refract_Response.re" {"Refract_Response.re"}
-  "_build/install/default/lib/refract/refract__Refract_StatusCode.cmi" {"refract__Refract_StatusCode.cmi"}
-  "_build/install/default/lib/refract/refract__Refract_StatusCode.cmx" {"refract__Refract_StatusCode.cmx"}
-  "_build/install/default/lib/refract/refract__Refract_StatusCode.cmt" {"refract__Refract_StatusCode.cmt"}
-  "_build/install/default/lib/refract/Refract_StatusCode.re" {"Refract_StatusCode.re"}
-  "_build/install/default/lib/refract/refract__.cmi" {"refract__.cmi"}
-  "_build/install/default/lib/refract/refract__.cmx" {"refract__.cmx"}
-  "_build/install/default/lib/refract/refract__.cmt" {"refract__.cmt"}
-  "_build/install/default/lib/refract/refract__.ml-gen" {"refract__.ml-gen"}
   "_build/install/default/lib/refract/refract.cma" {"refract.cma"}
   "_build/install/default/lib/refract/refract.cmxa" {"refract.cmxa"}
   "_build/install/default/lib/refract/refract.a" {"refract.a"}

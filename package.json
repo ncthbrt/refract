@@ -13,7 +13,7 @@
     "start": "bsb -make-world -w",
     "clean": "bsb -clean-world",
     "coverage": "nyc report --temp-directory=coverage --reporter=text-lcov | coveralls",
-    "postinstall": "node copyPlatformBinaryInPlace.js",
+    "postinstall": "node ./copyPlatformBinaryInPlace.js",
     "pretest": "yarn run build",
     "prepush": "yarn run build && yarn run local-test",
     "prepare": "yarn run clean && yarn run build"
