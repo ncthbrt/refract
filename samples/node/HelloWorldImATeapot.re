@@ -11,13 +11,15 @@ Server.start(
      )
   |. compose(
        Request.Pathname.(
-         matches(
-           Constant("hello", String(End)),
-           (name, ()) => {
-             Js.log(name);
-             Refract.Response.Body.string("hello " ++ name);
-           },
-         )
+         ctx =>
+           matches(
+             Constant("hello", String(End)),
+             (name, ()) => {
+               Js.log(name);
+               Refract.Response.Body.string("hello " ++ name);
+             },
+             ctx,
+           )
        ),
      )
   |. compose(Response.status(StatusCode.ImATeapot)),

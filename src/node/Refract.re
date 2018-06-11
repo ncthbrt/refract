@@ -248,7 +248,9 @@ module RefractRequest = {
     | None =>
       let url = url(req);
       let pathname = Bindings.Url.pathname(url);
-      let parsedPathname = RefractString.splitOnChar('/', pathname);
+      let parsedPathname =
+        RefractString.splitOnChar('/', pathname)
+        |. Belt.List.keep(x => x != "");
       req.parsedPathname = Some(parsedPathname);
       parsedPathname;
     };
