@@ -35,10 +35,10 @@
     "repromise": "github:aantron/repromise"
   },
   "peerDependencies": {
-    "ocaml": "~4.6.0"
+    "ocaml": "~4.2.3"
   },
   "devDependencies": {
     "@esy-ocaml/merlin": "*",
-    "ocaml": "~4.6.0"
+    "ocaml": "~4.2.3"
   }
 }

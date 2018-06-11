@@ -1,3 +1,9 @@
+module To_current =
+  Migrate_parsetree.Convert(
+    Migrate_parsetree.OCaml_402,
+    Migrate_parsetree.OCaml_current,
+  );
+
 module Ast = Ast_402;
 
 module Ast_helper = Ast.Ast_helper;
@@ -333,17 +339,22 @@ let mapper = {
     },
 };
 
+let mapper = To_current.copy_mapper(mapper);
+
 let () = {
   Location.register_error_of_exn(
     fun
     | MalformedPathStringWithLocation(MalformedPathString(reason), loc) =>
       Some(Location.error(~loc, reason))
     | _ => None,
+    /* Migrate_parsetree.(
+         Driver.register(
+           ~name="ppx_refract", Versions.ocaml_402, (_config, _cookies) =>
+           mapper
+         )
+       ); */
   );
-  Migrate_parsetree.(
-    Driver.register(
-      ~name="ppx_refract", Versions.ocaml_402, (_config, _cookies) =>
-      mapper
-    )
+  Migrate_parsetree.Compiler_libs.Ast_mapper.register("ppx_refract", arv =>
+    mapper
   );
 };

@@ -4,5 +4,5 @@
  ((name TestPpx)
   (public_name TestPpx)
   (flags (-w +26))
-  (preprocess (pps (refract_ppx)))
+  #; (preprocess (pps (refract_ppx)))
 (libraries (refract))))

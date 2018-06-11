@@ -13,7 +13,6 @@ jbuild-ignore
 refract.install
 refract.opam
 
-
 # Logs
 logs
 *.log

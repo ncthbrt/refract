@@ -30,6 +30,7 @@ lib: [
 bin: [
   "_build/install/default/bin/TestPpx" {"TestPpx"}
   "_build/install/default/bin/CommonTests" {"CommonTests"}
+  "_build/install/default/bin/ppx_refract" {"ppx_refract"}
 ]
 doc: [
   "_build/install/default/doc/refract/README.md"
