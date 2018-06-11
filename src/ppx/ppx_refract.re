@@ -261,18 +261,19 @@ module Route = {
     );
 };
 
-let createBoundPrism = (mapper: Ast_mapper.mapper, pat, pvbExp, exp, loc) => {
+let createBoundPrism =
+    ({expr, pat} as mapper: Ast_mapper.mapper, pattern, pvbExp, exp, loc) => {
   open Asttypes;
-  let pvbExp' = mapper.expr(mapper, pvbExp);
-  let exp' = mapper.expr(mapper, exp);
-  let pat' = mapper.pat(mapper, pat);
+  let pvbExp' = expr(mapper, pvbExp);
+  let exp' = expr(mapper, exp);
+  let pat' = pat(mapper, pattern);
   let fun_ = Ast_helper.Exp.fun_(~loc, "", None, pat', exp');
-  Ast_helper.Exp.apply(~loc, pvbExp, [("", fun_)]);
+  Ast_helper.Exp.apply(~loc, pvbExp', [("", fun_)]);
 };
 
 let mapper = {
   ...Ast_mapper.default_mapper,
-  expr: (mapper, e) =>
+  Ast_mapper.expr: (mapper, e) =>
     switch (e.pexp_desc) {
     | Pexp_extension((
         {Asttypes.txt: extensionName, _},
@@ -341,7 +342,7 @@ let () = {
   );
   Migrate_parsetree.(
     Driver.register(
-      ~name="ppx_Refract", Versions.ocaml_402, (_config, _cookies) =>
+      ~name="ppx_refract", Versions.ocaml_402, (_config, _cookies) =>
       mapper
     )
   );
