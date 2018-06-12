@@ -1,5 +1,5 @@
 {
-  "name": "Refract",
+  "name": "refract-node",
   "sources": [
     "src/node",
     "src/common",
@@ -11,6 +11,7 @@
   "bs-dependencies": [
     "repromise"
   ],
+  "suffix": ".bs.js",
   "refmt": 3,
   "package-specs": {
     "module": "commonjs",

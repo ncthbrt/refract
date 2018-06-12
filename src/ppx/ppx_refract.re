@@ -26,7 +26,7 @@ exception MalformedQueryString(string);
 
 exception MalformedPathStringWithLocation(exn, Location.t);
 
-module Path = {
+module Pathname = {
   let identifierRe = Re.Posix.re("([a-z_][0-9a-zA-Z_']*)?");
   let typeNameOrConversionFunctionRe =
     Re.Posix.re("([A-Za-z][0-9a-zA-Z_']*\\.)*([a-z_][0-9a-zA-Z_']*)");
@@ -74,19 +74,19 @@ module Path = {
     };
   module Locs = {
     let float =
-      Location.mknoloc(Longident.parse("Refract.Request.Path.Float"));
+      Location.mknoloc(Longident.parse("Refract.Request.Pathname.Float"));
     let string =
-      Location.mknoloc(Longident.parse("Refract.Request.Path.String"));
-    let int = Location.mknoloc(Longident.parse("Refract.Request.Path.Int"));
+      Location.mknoloc(Longident.parse("Refract.Request.Pathname.String"));
+    let int = Location.mknoloc(Longident.parse("Refract.Request.Pathname.Int"));
     let uint =
-      Location.mknoloc(Longident.parse("Refract.Request.Path.UInt"));
+      Location.mknoloc(Longident.parse("Refract.Request.Pathname.UInt"));
     let constant =
-      Location.mknoloc(Longident.parse("Refract.Request.Path.Constant"));
+      Location.mknoloc(Longident.parse("Refract.Request.Pathname.Constant"));
     let wildcard =
-      Location.mknoloc(Longident.parse("Refract.Request.Path.Wildcard"));
+      Location.mknoloc(Longident.parse("Refract.Request.Pathname.Wildcard"));
     let custom =
-      Location.mknoloc(Longident.parse("Refract.Request.Path.Custom"));
-    let end_ = Location.mknoloc(Longident.parse("Refract.Request.Path.End"));
+      Location.mknoloc(Longident.parse("Refract.Request.Pathname.Custom"));
+    let end_ = Location.mknoloc(Longident.parse("Refract.Request.Pathname.End"));
     let fromName = name => Location.mknoloc(Longident.parse(name));
     let getLoc =
       fun
@@ -161,7 +161,7 @@ module Route = {
       Exp.ident(Location.mknoloc(Longident.parse(name)));
     let makeIdentP = i => makeIdent("p" ++ string_of_int(i));
     let rec aux =
-      Path.(
+      Pathname.(
         i =>
           fun
           | [] => []
@@ -222,20 +222,20 @@ module Route = {
   };
   let create = (~loc: Ast_helper.loc, str) => {
     let path =
-      try (Path.parse(str)) {
+      try (Pathname.parse(str)) {
       | MalformedPathString(_) as e =>
         raise(MalformedPathStringWithLocation(e, loc))
       };
-    let pathArity = Path.resultArity(path);
+    let pathArity = Pathname.resultArity(path);
     let inner =
       Ast_helper.Exp.apply(
         ~loc,
         Ast_helper.Exp.ident(
           ~loc,
-          Location.mknoloc(Longident.parse("Refract.Request.Path.matches")),
+          Location.mknoloc(Longident.parse("Refract.Request.Pathname.matches")),
         ),
         [
-          ("", Path.toExpr(path)),
+          ("", Pathname.toExpr(path)),
           (
             "",
             createPathFunc(~loc, pathArity, createApplication(~loc, path)),
