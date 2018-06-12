@@ -56,7 +56,9 @@ typings/
 
 # dotenv environment variables file
 .env
+!copyPlatformBinaryInPlace.js
 **/*.js
+
 
 lib/
 _build/
