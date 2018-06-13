@@ -4,6 +4,8 @@ module type RefractString = {
   let splitFirst: (char, string) => (string, option(string));
 };
 
+module MimeType = {};
+
 module Method = {
   type t =
     /* Has no request body */
@@ -233,15 +235,22 @@ module StatusCode = {
 };
 
 module RefractResponse = {
+  type stream =
+    (string => Repromise.t(unit)) => Repromise.t([ | `Ok | `Error(exn)]);
   type body = [
     | `Empty
     | `String(string)
-    | `Stream((string => Repromise.t(unit)) => Repromise.t(unit))
+    | `Stream(stream)
+    | `File(string)
   ];
   type t = {
     headers: list((string, string)),
     status: StatusCode.t,
     body,
+  };
+  let header = (res, key, value) => {
+    ...res,
+    headers: [(key, value), ...res.headers],
   };
   let empty = {headers: [], status: StatusCode.NotFound, body: `Empty};
   let status = (res, statusCode: StatusCode.t) => {
@@ -251,6 +260,16 @@ module RefractResponse = {
   module Body = {
     let string: (t, string) => t =
       (res, str) => {...res, body: `String(str)};
+    let stream: (t, stream) => t =
+      (res, stream) => {...res, body: `Stream(stream)};
+    let file = (res, ~filePath, ~asDownload) => {
+      let res = {...res, body: `File(filePath), status: Ok};
+      if (asDownload) {
+        header(res, "Content-Disposition", "attachment");
+      } else {
+        res;
+      };
+    };
   };
 };
 
@@ -317,14 +336,13 @@ module Make =
   };
   module Prism = {
     type result =
-      | Unhandled(option(exn))
+      | Unhandled
+      | Error(exn)
       | Handled(HttpContext.t);
     type t = HttpContext.t => Repromise.t(result);
     let handled: t = ctx => Repromise.resolve(Handled(ctx));
-    let unhandled: t =
-      (_: HttpContext.t) => Repromise.resolve(Unhandled(None));
-    let unhandledWithError: exn => t =
-      (err, _) => Repromise.resolve(Unhandled(Some(err)));
+    let unhandled: t = (_: HttpContext.t) => Repromise.resolve(Unhandled);
+    let error: exn => t = (err, _) => Repromise.resolve(Error(err));
   };
   module Request = {
     module Query = {};
@@ -409,7 +427,7 @@ module Make =
         Repromise.then_(
           fun
           | `Ok(str) => f(str, ctx)
-          | `Error(e) => Prism.unhandledWithError(e, ctx),
+          | `Error(e) => Prism.error(e, ctx),
           str,
         );
       };
@@ -417,7 +435,7 @@ module Make =
         (decoder, f) =>
           string(str =>
             try (f(decoder(Json.fromString(str)))) {
-            | e => Prism.unhandledWithError(e)
+            | e => Prism.error(e)
             }
           );
     };
@@ -456,6 +474,7 @@ module Make =
           response: RefractResponse.status(ctx.response, status),
         });
     module Body = {
+      exception FileNotFound(string);
       let string: string => Prism.t =
         (str, ctx) =>
           Prism.handled({
@@ -464,24 +483,40 @@ module Make =
           });
       let json: (Json.encoder('a), 'a) => Prism.t =
         (encoder, value) => string(Json.toString(encoder(value)));
+      let file = (~asDownload: bool=false, filePath, ctx: HttpContext.t) =>
+        Prism.handled({
+          ...ctx,
+          response:
+            RefractResponse.Body.file(ctx.response, ~filePath, ~asDownload),
+        });
     };
   };
-  let mapUnhandled = (res, f) =>
+  let first2: (Prism.t, Prism.t) => Prism.t =
+    (p1, p2, ctx) =>
+      Repromise.then_(
+        fun
+        | Prism.Handled(ctx) => Repromise.resolve(Prism.Handled(ctx))
+        | Error(e) => Repromise.resolve(Prism.Error(e))
+        | Unhandled => p2(ctx),
+        p1(ctx),
+      );
+  let onError: (Prism.t, exn => Prism.t) => Prism.t =
+    (p1, p2, ctx) =>
+      Repromise.then_(
+        fun
+        | Prism.Handled(ctx) => Repromise.resolve(Prism.Handled(ctx))
+        | Error(e) => p2(e, ctx)
+        | Unhandled => Repromise.resolve(Prism.Unhandled),
+        p1(ctx),
+      );
+  let compose = (p1, p2, ctx) =>
     Repromise.then_(
       fun
-      | Prism.Unhandled(e) => f(e)
-      | Handled(ctx) => Repromise.resolve(Prism.Handled(ctx)),
-      res,
+      | Prism.Handled(ctx) => p2(ctx)
+      | Error(e) => Repromise.resolve(Prism.Error(e))
+      | Unhandled => Repromise.resolve(Prism.Unhandled),
+      p1(ctx),
     );
-  let map = (res: Repromise.t(Prism.result), f: Prism.t) =>
-    Repromise.then_(
-      fun
-      | Prism.Handled(ctx) => f(ctx)
-      | Unhandled(e) => Repromise.resolve(Prism.Unhandled(e)),
-      res,
-    );
-  let compose: (Prism.t, Prism.t) => Prism.t =
-    (a, b, ctx) => map(a(ctx), b);
   let rec composeMany: list(Prism.t) => Prism.t =
     (prisms, ctx) =>
       switch (prisms) {
@@ -489,21 +524,12 @@ module Make =
       | [prism] => prism(ctx)
       | [prism, ...prisms] => compose(prism, composeMany(prisms), ctx)
       };
-  let switch_: list(Prism.t) => Prism.t =
-    (lst, ctx: HttpContext.t) => {
-      let rec aux =
-        fun
-        | [] => Prism.unhandled(ctx)
-        | [hd, ...tail] =>
-          mapUnhandled(hd(ctx), x =>
-            switch (x) {
-            | None => aux(tail)
-            | Some(e) => Repromise.resolve(Prism.Unhandled(Some(e)))
-            }
-          );
-      aux(lst);
-    };
-  let match_ = switch_;
+  let rec first: list(Prism.t) => Prism.t =
+    (prisms, ctx: HttpContext.t) =>
+      switch (prisms) {
+      | [] => Prism.unhandled(ctx)
+      | [prism, ...prisms] => first2(prism, first(prisms), ctx)
+      };
   let zip:
     (
       ('a => Prism.t) => Prism.t,

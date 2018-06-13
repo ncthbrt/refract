@@ -48,6 +48,7 @@ module Bindings = {
       "write";
     [@bs.send]
     external writeHead : (t, int, Js.Dict.t(string)) => unit = "writeHead";
+    [@bs.send] external setHeader : (t, string, string) => unit = "setHeader";
     [@bs.send] external end_ : t => unit = "end";
   };
   module Buffer = {
@@ -77,6 +78,25 @@ module Bindings = {
     [@bs.module "url"] [@bs.val] external parse : string => t = "parse";
     [@bs.get] external pathname : t => string = "pathname";
     [@bs.get] external query : t => string = "query";
+  };
+  module Send = {
+    type t;
+    [@bs.deriving abstract]
+    type options = {root: string};
+    [@bs.send] external pipe : (t, Response.t) => unit = "";
+    [@bs.send]
+    external on :
+      (
+        t,
+        [@bs.string] [
+          | `headers((Response.t, string, unit) => unit)
+          | `error({. "status": Js.nullable(int)} => unit)
+          | [@bs.as "end"] `end_(unit => unit)
+        ]
+      ) =>
+      t =
+      "";
+    [@bs.module "send"] external send : (Request.t, string, options) => t = "";
   };
 };
 
@@ -285,56 +305,101 @@ module RefractRequest = {
 include RefractCommon.Make(RefractRequest, RefractString, RefractJson);
 
 module Server = {
+  let normalizedRoot =
+    Node.Path.resolve(Node.Path.join2(Node.Process.cwd(), "public"), "");
   type t = Bindings.Server.t;
   [@bs.send] external listen : (t, int) => unit = "";
-  let toResponse = (ctx: HttpContext.t, nodeRes) => {
-    Bindings.Response.writeHead(
-      nodeRes,
-      StatusCode.toInt(ctx.response.status),
-      ctx.response.headers
-      |. Belt.List.reduce(
-           Js.Dict.empty(),
-           (prev, (k, v)) => {
-             Js.Dict.set(prev, k, v);
-             prev;
-           },
-         ),
-    );
+  let toResponse = (ctx: HttpContext.t, nodeReq, nodeRes) =>
     switch (ctx.response.body) {
-    | `Empty =>
-      Repromise.resolve(
-        {
-          Bindings.Response.end_(nodeRes);
-          ();
-        },
-      )
-    | `String(str) =>
+    | `File(path) =>
       let (promise: Repromise.t(unit), resolve) = Repromise.new_();
-      Bindings.Response.write(
-        nodeRes,
-        str,
-        `utf8,
-        () => {
-          Bindings.Response.end_(nodeRes);
-          resolve();
-        },
-      );
-      promise;
-    | `Stream(f) =>
-      f(str => {
-        let (promise: Repromise.t(unit), resolve) = Repromise.new_();
-        Bindings.Response.write(nodeRes, str, `utf8, resolve);
-        promise;
-      })
-      |. Repromise.then_(
-           () => {
-             Bindings.Response.end_(nodeRes);
-             Repromise.resolve();
-           },
-           _,
+      Bindings.Send.send(
+        nodeReq,
+        path,
+        Bindings.Send.options(~root=normalizedRoot),
+      )
+      |. Bindings.Send.on(
+           `headers(
+             (res, _, ()) => {
+               Bindings.Response.statusCode(
+                 res,
+                 StatusCode.toInt(ctx.response.status),
+               );
+               ctx.response.headers
+               |. Belt.List.forEach(((k, v)) =>
+                    Bindings.Response.setHeader(res, k, v)
+                  );
+             },
+           ),
          )
+      |. Bindings.Send.on(
+           `error(
+             e => {
+               let status =
+                 e##status
+                 |. Js.Nullable.toOption
+                 |. Belt.Option.getWithDefault(500);
+               Bindings.Response.statusCode(nodeRes, status);
+               Bindings.Response.end_(nodeRes);
+               resolve();
+             },
+           ),
+         )
+      |. Bindings.Send.on(`end_(() => resolve()))
+      |. Bindings.Send.pipe(nodeRes);
+      promise;
+    | body =>
+      Bindings.Response.writeHead(
+        nodeRes,
+        StatusCode.toInt(ctx.response.status),
+        ctx.response.headers
+        |. Belt.List.reduce(
+             Js.Dict.empty(),
+             (prev, (k, v)) => {
+               Js.Dict.set(prev, k, v);
+               prev;
+             },
+           ),
+      );
+      let sendBody = (
+        fun
+        | `File(_) => Repromise.resolve()
+        | `Empty =>
+          Repromise.resolve(
+            {
+              Bindings.Response.end_(nodeRes);
+              ();
+            },
+          )
+        | `String(str) => {
+            let (promise: Repromise.t(unit), resolve) = Repromise.new_();
+            Bindings.Response.write(
+              nodeRes,
+              str,
+              `utf8,
+              () => {
+                Bindings.Response.end_(nodeRes);
+                resolve();
+              },
+            );
+            promise;
+          }
+        | `Stream(f) =>
+          f(str => {
+            let (promise: Repromise.t(unit), resolve) = Repromise.new_();
+            Bindings.Response.write(nodeRes, str, `utf8, resolve);
+            promise;
+          })
+          |. Repromise.then_(
+               (_) => {
+                 Bindings.Response.end_(nodeRes);
+                 Repromise.resolve();
+               },
+               _,
+             )
+      );
+      sendBody(body);
     };
-  };
   let handler = prism =>
     (. req, res) => {
       let request = RefractRequest.make(req);
@@ -343,14 +408,14 @@ module Server = {
       ignore(
         Repromise.then_(
           fun
-          | Prism.Unhandled(None) =>
+          | Prism.Unhandled =>
             Repromise.resolve(
               {
                 Bindings.Response.statusCode(res, 404);
                 Bindings.Response.end_(res);
               },
             )
-          | Unhandled(Some(err)) => {
+          | Error(err) => {
               Js.Console.error2("Internal Server Error", err);
               Repromise.resolve(
                 {
@@ -359,7 +424,7 @@ module Server = {
                 },
               );
             }
-          | Handled(ctx) => toResponse(ctx, res),
+          | Handled(ctx) => toResponse(ctx, req, res),
           result,
         ),
       );

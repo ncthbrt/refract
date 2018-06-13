@@ -1,5 +1,5 @@
 {
-  "name": "refract-node",
+  "name": "refract-server",
   "sources": [
     "src/node",
     "src/common",

@@ -77,7 +77,8 @@ module Pathname = {
       Location.mknoloc(Longident.parse("Refract.Request.Pathname.Float"));
     let string =
       Location.mknoloc(Longident.parse("Refract.Request.Pathname.String"));
-    let int = Location.mknoloc(Longident.parse("Refract.Request.Pathname.Int"));
+    let int =
+      Location.mknoloc(Longident.parse("Refract.Request.Pathname.Int"));
     let uint =
       Location.mknoloc(Longident.parse("Refract.Request.Pathname.UInt"));
     let constant =
@@ -86,7 +87,8 @@ module Pathname = {
       Location.mknoloc(Longident.parse("Refract.Request.Pathname.Wildcard"));
     let custom =
       Location.mknoloc(Longident.parse("Refract.Request.Pathname.Custom"));
-    let end_ = Location.mknoloc(Longident.parse("Refract.Request.Pathname.End"));
+    let end_ =
+      Location.mknoloc(Longident.parse("Refract.Request.Pathname.End"));
     let fromName = name => Location.mknoloc(Longident.parse(name));
     let getLoc =
       fun
@@ -202,20 +204,26 @@ module Route = {
     let args = aux(0, path);
     switch (args) {
     | [] =>
-      Ast_helper.Exp.apply(~loc, makeIdent("f"), [("", makeIdentP(0))])
-    | args => Ast_helper.Exp.apply(~loc, makeIdent("f"), args)
+      Ast_helper.Exp.apply(
+        ~loc,
+        makeIdent("pathHandlerFunc"),
+        [("", makeIdentP(0))],
+      )
+    | args => Ast_helper.Exp.apply(~loc, makeIdent("pathHandlerFunc"), args)
     };
   };
   let createPathFunc = (~loc, arity, inner) => {
     open Ast_helper;
     let makePat = i =>
       Pat.var(~loc, Location.mknoloc("p" ++ string_of_int(i)));
+    let makeUnitPat = () =>
+      Pat.construct(~loc, Location.mknoloc(Longident.parse("()")), None);
     let rec aux = i =>
       Ast_helper.Exp.fun_(
         ~loc,
         "",
         None,
-        makePat(i),
+        i >= arity ? makeUnitPat() : makePat(i),
         i >= arity ? inner : aux(i + 1),
       );
     aux(0);
@@ -232,7 +240,9 @@ module Route = {
         ~loc,
         Ast_helper.Exp.ident(
           ~loc,
-          Location.mknoloc(Longident.parse("Refract.Request.Pathname.matches")),
+          Location.mknoloc(
+            Longident.parse("Refract.Request.Pathname.matches"),
+          ),
         ),
         [
           ("", Pathname.toExpr(path)),
@@ -246,7 +256,7 @@ module Route = {
       ~loc,
       "",
       None,
-      Ast_helper.Pat.var(~loc, Location.mknoloc("f")),
+      Ast_helper.Pat.var(~loc, Location.mknoloc("pathHandlerFunc")),
       inner,
     );
   };
@@ -255,14 +265,32 @@ module Route = {
       ~loc,
       "",
       None,
-      Ast_helper.Pat.var(~loc, Location.mknoloc("f")),
+      Ast_helper.Pat.var(~loc, Location.mknoloc("pathHandlerFunc")),
       Ast_helper.Exp.apply(
         ~loc,
         Ast_helper.Exp.ident(
           ~loc,
           Location.mknoloc(Longident.parse("Refract.compose")),
         ),
-        [("", Method.toExpr(method)), ("", create(~loc, str))],
+        [
+          ("", Method.toExpr(method)),
+          (
+            "",
+            Ast_helper.Exp.apply(
+              ~loc,
+              create(~loc, str),
+              [
+                (
+                  "",
+                  Ast_helper.Exp.ident(
+                    ~loc,
+                    Location.mknoloc(Longident.parse("pathHandlerFunc")),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
 };

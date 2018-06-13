@@ -2,3 +2,4 @@
      print_endline("hello unlabelled " ++ name);
      Refract.Prism.handled;
    }); */
+/* let a = (a, b, ()) => (); */

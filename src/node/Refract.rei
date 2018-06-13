@@ -108,7 +108,7 @@ module Prism: {
   type t = HttpContext.t => Repromise.t(result);
   let handled: t;
   let unhandled: t;
-  let unhandledWithError: exn => t;
+  let error: exn => t;
 };
 
 module Request: {
@@ -149,28 +149,22 @@ module Response: {
   let notFound: Prism.t;
   let status: StatusCode.t => Prism.t;
   module Body: {
+    exception FileNotFound(string);
     let string: string => Prism.t;
     let json: (Json.encoder('a), 'a) => Prism.t;
+    let file: (~asDownload: bool=?, string) => Prism.t;
   };
 };
 
-let mapUnhandled:
-  (
-    Repromise.promise(Prism.result),
-    option(exn) => Repromise.promise(Prism.result)
-  ) =>
-  Repromise.promise(Prism.result);
+let onError: (Prism.t, exn => Prism.t) => Prism.t;
 
-let map:
-  (Repromise.t(Prism.result), Prism.t) => Repromise.promise(Prism.result);
+let first2: (Prism.t, Prism.t) => Prism.t;
+
+let first: list(Prism.t) => Prism.t;
 
 let compose: (Prism.t, Prism.t) => Prism.t;
 
 let composeMany: list(Prism.t) => Prism.t;
-
-let switch_: list(Prism.t) => Prism.t;
-
-let match_: list(Prism.t) => Prism.t;
 
 let zip:
   (
