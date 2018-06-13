@@ -272,25 +272,7 @@ module Route = {
           ~loc,
           Location.mknoloc(Longident.parse("Refract.compose")),
         ),
-        [
-          ("", Method.toExpr(method)),
-          (
-            "",
-            Ast_helper.Exp.apply(
-              ~loc,
-              create(~loc, str),
-              [
-                (
-                  "",
-                  Ast_helper.Exp.ident(
-                    ~loc,
-                    Location.mknoloc(Longident.parse("pathHandlerFunc")),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+        [("", Method.toExpr(method)), ("", create(~loc, str))],
       ),
     );
 };
