@@ -312,7 +312,6 @@ let createBoundPrism =
 
 let createComposedPrism =
     (~loc, {expr, pat} as mapper: Ast_mapper.mapper, e1, e2) => {
-  open Asttypes;
   let e1' = expr(mapper, e1);
   let e2' = expr(mapper, e2);
   Ast_helper.Exp.apply(

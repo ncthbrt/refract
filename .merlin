@@ -1,13 +1,11 @@
 ####{BSB GENERATED: NO EDIT
-FLG -ppx /Users/ncthbrt/git/refract/node_modules/bs-platform/lib/bsppx.exe
-S /Users/ncthbrt/git/refract/node_modules/bs-platform/lib/ocaml
-B /Users/ncthbrt/git/refract/node_modules/bs-platform/lib/ocaml
+FLG -ppx /Users/ncthbrt/git/refract-test/node_modules/bs-platform/lib/bsppx.exe
+S /Users/ncthbrt/git/refract-test/node_modules/bs-platform/lib/ocaml
+B /Users/ncthbrt/git/refract-test/node_modules/bs-platform/lib/ocaml
 FLG -nostdlib -no-alias-deps -color always
 FLG -w -30-40+6+7+27+32..39+44+45+101
-S /Users/ncthbrt/git/refract/node_modules/repromise/lib/ocaml
-B /Users/ncthbrt/git/refract/node_modules/repromise/lib/ocaml
-S samples/node
-B lib/bs/samples/node
+S /Users/ncthbrt/git/refract-test/node_modules/refract-server/node_modules/repromise/lib/ocaml
+B /Users/ncthbrt/git/refract-test/node_modules/refract-server/node_modules/repromise/lib/ocaml
 S src/common
 B lib/bs/src/common
 S src/node

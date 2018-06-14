@@ -96,7 +96,7 @@ module Bindings = {
       ) =>
       t =
       "";
-    [@bs.module "send"] external send : (Request.t, string, options) => t = "";
+    [@bs.module] external send : (Request.t, string, options) => t = "send";
   };
 };
 
@@ -408,21 +408,16 @@ module Server = {
       ignore(
         Repromise.then_(
           fun
-          | Prism.Unhandled =>
-            Repromise.resolve(
-              {
-                Bindings.Response.statusCode(res, 404);
-                Bindings.Response.end_(res);
-              },
-            )
+          | Prism.Unhandled => {
+              Bindings.Response.statusCode(res, 404);
+              Bindings.Response.end_(res);
+              Repromise.resolve();
+            }
           | Error(err) => {
               Js.Console.error2("Internal Server Error", err);
-              Repromise.resolve(
-                {
-                  Bindings.Response.statusCode(res, 500);
-                  Bindings.Response.end_(res);
-                },
-              );
+              Bindings.Response.statusCode(res, 500);
+              Bindings.Response.end_(res);
+              Repromise.resolve();
             }
           | Handled(ctx) => toResponse(ctx, req, res),
           result,
