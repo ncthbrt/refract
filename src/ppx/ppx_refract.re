@@ -149,9 +149,9 @@ module Method = {
   let rec toExpr =
     fun
     | Get => fromName("Refract.Request.get")
-    | Post => fromName("Refract.Method.post")
-    | Put => fromName("Refract.Method.put")
-    | Delete => fromName("Refract.Method.delete")
+    | Post => fromName("Refract.Request.post")
+    | Put => fromName("Refract.Request.put")
+    | Delete => fromName("Refract.Request.delete")
     | Patch => fromName("Refract.Request.patch")
     | Options => fromName("Refract.Request.options");
 };
@@ -272,7 +272,25 @@ module Route = {
           ~loc,
           Location.mknoloc(Longident.parse("Refract.compose")),
         ),
-        [("", Method.toExpr(method)), ("", create(~loc, str))],
+        [
+          ("", Method.toExpr(method)),
+          (
+            "",
+            Ast_helper.Exp.apply(
+              ~loc,
+              create(~loc, str),
+              [
+                (
+                  "",
+                  Ast_helper.Exp.ident(
+                    ~loc,
+                    Location.mknoloc(Longident.parse("pathHandlerFunc")),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
 };
