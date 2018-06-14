@@ -301,7 +301,7 @@ module Route = {
 };
 
 let createBoundPrism =
-    ({expr, pat} as mapper: Ast_mapper.mapper, pattern, pvbExp, exp, loc) => {
+    (~loc, {expr, pat} as mapper: Ast_mapper.mapper, pattern, pvbExp, exp) => {
   open Asttypes;
   let pvbExp' = expr(mapper, pvbExp);
   let exp' = expr(mapper, exp);
@@ -310,10 +310,36 @@ let createBoundPrism =
   Ast_helper.Exp.apply(~loc, pvbExp', [("", fun_)]);
 };
 
+let createComposedPrism =
+    (~loc, {expr, pat} as mapper: Ast_mapper.mapper, e1, e2) => {
+  open Asttypes;
+  let e1' = expr(mapper, e1);
+  let e2' = expr(mapper, e2);
+  Ast_helper.Exp.apply(
+    ~loc,
+    Ast_helper.Exp.ident(
+      Location.mknoloc(Longident.parse("Refract.compose")),
+    ),
+    [("", e1'), ("", e2')],
+  );
+};
+
 let mapper = {
   ...Ast_mapper.default_mapper,
   Ast_mapper.expr: (mapper, e) =>
     switch (e.pexp_desc) {
+    | [@implicit_arity]
+      Pexp_sequence(
+        {
+          pexp_desc:
+            Pexp_extension((
+              {Asttypes.txt: "refract.await", _},
+              PStr([{pstr_desc: Pstr_eval(e1, _), _}]),
+            )),
+        },
+        e2,
+      ) =>
+      createComposedPrism(~loc=e1.pexp_loc, mapper, e1, e2)
     | Pexp_extension((
         {Asttypes.txt: extensionName, _},
         PStr([
@@ -331,20 +357,25 @@ let mapper = {
           },
         ]),
       )) =>
-      switch (extensionName) {
-      | "refract" => Route.create(~loc=strLoc, str)
-      | "refract.get" => Route.createWithMethod(~loc=strLoc, Method.Get, str)
-      | "refract.post" =>
-        Route.createWithMethod(~loc=strLoc, Method.Post, str)
-      | "refract.delete" =>
-        Route.createWithMethod(~loc=strLoc, Method.Delete, str)
-      | "refract.patch" =>
-        Route.createWithMethod(~loc=strLoc, Method.Patch, str)
-      | "refract.put" => Route.createWithMethod(~loc=strLoc, Method.Put, str)
-      | "refract.options" =>
-        Route.createWithMethod(~loc=strLoc, Method.Options, str)
-      | _ => Ast_mapper.default_mapper.expr(mapper, e)
-      }
+      Ast_mapper.default_mapper.expr(
+        mapper,
+        switch (extensionName) {
+        | "refract" => Route.create(~loc=strLoc, str)
+        | "refract.get" =>
+          Route.createWithMethod(~loc=strLoc, Method.Get, str)
+        | "refract.post" =>
+          Route.createWithMethod(~loc=strLoc, Method.Post, str)
+        | "refract.delete" =>
+          Route.createWithMethod(~loc=strLoc, Method.Delete, str)
+        | "refract.patch" =>
+          Route.createWithMethod(~loc=strLoc, Method.Patch, str)
+        | "refract.put" =>
+          Route.createWithMethod(~loc=strLoc, Method.Put, str)
+        | "refract.options" =>
+          Route.createWithMethod(~loc=strLoc, Method.Options, str)
+        | _ => Ast_mapper.default_mapper.expr(mapper, e)
+        },
+      )
     | [@implicit_arity]
       Pexp_extension(
         {Asttypes.txt: "refract", _},
@@ -367,7 +398,7 @@ let mapper = {
           },
         ]),
       ) =>
-      createBoundPrism(mapper, pat, pvb_expr, e', loc)
+      createBoundPrism(~loc, mapper, pat, pvb_expr, e')
     | _ => Ast_mapper.default_mapper.expr(mapper, e)
     },
 };
