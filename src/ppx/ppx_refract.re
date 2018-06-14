@@ -314,12 +314,31 @@ let createComposedPrism =
     (~loc, {expr, pat} as mapper: Ast_mapper.mapper, e1, e2) => {
   let e1' = expr(mapper, e1);
   let e2' = expr(mapper, e2);
+  let e2Func =
+    Ast_helper.Exp.fun_(
+      ~loc,
+      "",
+      None,
+      Ast_helper.Pat.var(~loc, Location.mknoloc("httpContextObject")),
+      Ast_helper.Exp.apply(
+        ~loc,
+        e2',
+        [
+          (
+            "",
+            Ast_helper.Exp.ident(
+              Location.mknoloc(Longident.parse("httpContextObject")),
+            ),
+          ),
+        ],
+      ),
+    );
   Ast_helper.Exp.apply(
     ~loc,
     Ast_helper.Exp.ident(
       Location.mknoloc(Longident.parse("Refract.compose")),
     ),
-    [("", e1'), ("", e2')],
+    [("", e1'), ("", e2Func)],
   );
 };
 
