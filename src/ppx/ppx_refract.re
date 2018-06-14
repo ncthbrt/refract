@@ -4,6 +4,11 @@ module To_current =
     Migrate_parsetree.OCaml_current,
   );
 
+let migration =
+  Migrate_parsetree.(
+    Versions.migrate(Versions.ocaml_402, Versions.ocaml_current)
+  );
+
 module Ast = Ast_402;
 
 module Ast_helper = Ast.Ast_helper;
